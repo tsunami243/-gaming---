@@ -1,16 +1,19 @@
 package org.example.bigevent.pojo;
 
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
-public class User {
+public class User implements org.springframework.security.core.userdetails.UserDetails {
     @NotNull(message = "主键ID不能为空")
     private Integer id;//主键ID
     private String username;//用户名
@@ -22,6 +25,7 @@ public class User {
     @Email(message = "邮箱格式错误")
     private String email;//邮箱
     private String userPic;//用户头像地址
+    private String role = "ROLE_USER";//角色
     private LocalDateTime createTime;//创建时间
     private LocalDateTime updateTime;//更新时间
 
@@ -165,6 +169,39 @@ public class User {
      */
     public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     public String toString() {
