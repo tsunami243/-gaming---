@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/article")
 public class ArticleController {
@@ -56,6 +59,33 @@ public class ArticleController {
             return Result.success();
         }
         return Result.error("文章不存在");
+    }
+
+    //获取轮播图文章列表
+    @GetMapping("/carousel")
+    public Result<List<Article>> getCarouselList(@RequestParam(required = false) Integer limit){
+        if (limit == null || limit <= 0) {
+            limit = 5;
+        }
+        List<Article> carouselList = articleService.getCarouselList(limit);
+        return Result.success(carouselList);
+    }
+
+    //获取文章统计信息
+    @GetMapping("/stats")
+    public Result<Map<String, Object>> getArticleStats(@RequestParam Integer articleId){
+        Map<String, Object> stats = articleService.getArticleStats(articleId);
+        if (stats != null) {
+            return Result.success(stats);
+        }
+        return Result.error("文章不存在");
+    }
+
+    //计算文章热度
+    @GetMapping("/heat")
+    public Result<Integer> calculateHeat(@RequestParam Integer articleId){
+        Integer heat = articleService.calculateHeat(articleId);
+        return Result.success(heat);
     }
 }
 

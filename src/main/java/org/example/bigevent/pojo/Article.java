@@ -14,7 +14,7 @@ public class Article {
     @NotNull(message = "文章ID不能为空")
     private Integer id;//主键ID
     @NotEmpty(message = "文章标题不能为空")
-    @Pattern(regexp = "^\\S{1,10}$",message = "文章标题只能包含字母、数字、下划线和中文")
+    @Pattern(regexp = "^[\\S ]{1,50}$",message = "文章标题只能包含字母、数字、下划线、中文和空格")
     private String title;//文章标题
     @NotEmpty(message = "文章内容不能为空")
     private String content;//文章内容
@@ -28,11 +28,16 @@ public class Article {
     private Integer createUser;//创建人ID
     private LocalDateTime createTime;//创建时间
     private LocalDateTime updateTime;//更新时间
+    private Integer views = 0;//浏览量
+    private Integer uniqueViews = 0;//独立浏览量
+    private Integer favorites = 0;//收藏数
+    private String tags = "";//标签，JSON数组格式存储
+    private Integer isCarousel = 0;//是否轮播图文章，0否，1是
 
     public Article() {
     }
 
-    public Article(Integer id, String title, String content, String coverImg, String state, Integer categoryId, Integer createUser, LocalDateTime createTime, LocalDateTime updateTime) {
+    public Article(Integer id, String title, String content, String coverImg, String state, Integer categoryId, Integer createUser, LocalDateTime createTime, LocalDateTime updateTime, Integer views, Integer uniqueViews, Integer favorites, String tags, Integer isCarousel) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -42,6 +47,11 @@ public class Article {
         this.createUser = createUser;
         this.createTime = createTime;
         this.updateTime = updateTime;
+        this.views = views;
+        this.uniqueViews = uniqueViews;
+        this.favorites = favorites;
+        this.tags = tags;
+        this.isCarousel = isCarousel;
     }
 
     /**
@@ -186,6 +196,46 @@ public class Article {
      */
     public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getViews() {
+        return views;
+    }
+
+    public void setViews(Integer views) {
+        this.views = views;
+    }
+
+    public Integer getUniqueViews() {
+        return uniqueViews;
+    }
+
+    public void setUniqueViews(Integer uniqueViews) {
+        this.uniqueViews = uniqueViews;
+    }
+
+    public Integer getFavorites() {
+        return favorites;
+    }
+
+    public void setFavorites(Integer favorites) {
+        this.favorites = favorites;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public Integer getIsCarousel() {
+        return isCarousel;
+    }
+
+    public void setIsCarousel(Integer isCarousel) {
+        this.isCarousel = isCarousel;
     }
 
     public String toString() {

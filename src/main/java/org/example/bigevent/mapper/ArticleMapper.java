@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface ArticleMapper {
-    @Insert("insert into article (title,content,cover_img,state,category_id,create_user,create_time,update_time) values (#{title},#{content},#{coverImg},#{state},#{categoryId},#{createUser},#{createTime},#{updateTime})")
+    @Insert("insert into article (title,content,cover_img,state,category_id,create_user,create_time,update_time,tags,is_carousel) values (#{title},#{content},#{coverImg},#{state},#{categoryId},#{createUser},#{createTime},#{updateTime},#{tags},#{isCarousel})")
     void add(Article article);
 
     List<Article> list(@Param("categoryId") Integer categoryId, @Param("state") String state, @Param("userId") Integer userId);
@@ -18,7 +18,15 @@ public interface ArticleMapper {
     @Select("select * from article where id=#{id} and create_user=#{userId}")
     Article detail(@Param("id") Integer id, @Param("userId") Integer userId);
 
+    //根据文章id查询文章（不校验用户，用于统计）
+    @Select("select * from article where id=#{id}")
+    Article findById(@Param("id") Integer id);
+
     //根据文章id删除文章
     @Delete("delete from article where id=#{id} and create_user=#{userId}")
     void delete(@Param("id") Integer id, @Param("userId") Integer userId);
+
+    //查询轮播图文章列表
+    @Select("select * from article where is_carousel = 1 and state = '已发布' order by update_time desc limit #{limit}")
+    List<Article> selectCarouselList(@Param("limit") Integer limit);
 }

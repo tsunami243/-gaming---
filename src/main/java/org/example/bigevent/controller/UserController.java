@@ -10,12 +10,14 @@ import org.example.bigevent.utils.Md5Util;
 import org.example.bigevent.utils.ThreadLocalUtil;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +25,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     UserService userService;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     @PostMapping("/register")
     public Result register(@Pattern(regexp = "^//S{5,16}$") String username,
                            @Pattern(regexp = "^//S{5,16}$")String password) {
@@ -47,6 +51,8 @@ public class UserController {
             UserMap.put("userId",u.getId());
             UserMap.put("username",u.getUsername());
             String JwtToken = JwtUtil.genToken(UserMap);
+            stringRedisTemplate.opsForValue().set("token"+u.getId(),JwtToken,12, TimeUnit.HOURS);
+
             return Result.success(JwtToken);
         }
         return Result.error("用户密码错误");

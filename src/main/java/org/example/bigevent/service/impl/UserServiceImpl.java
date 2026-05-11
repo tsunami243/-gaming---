@@ -6,6 +6,7 @@ import org.example.bigevent.service.UserService;
 import org.example.bigevent.utils.Md5Util;
 import org.example.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Override
     public User findByUserName(String username) {
@@ -48,5 +51,7 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> tmp = ThreadLocalUtil.get();
         Integer id = (Integer) tmp.get("userId");
         userMapper.updatePwd(Md5Util.getMD5String(newPwd),id);
+        //更新密码后立马删除redis中存入的token
+        stringRedisTemplate.opsForValue().getOperations().delete("token" + id);
     }
 }
