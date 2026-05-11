@@ -43,4 +43,13 @@ public class JwtUtil {
             throw new RuntimeException("Token 验证失败：" + e.getMessage());
         }
     }
+
+    // 生成带自定义过期时间的 Token（用于 RememberMe）
+    public static String genToken(Map<String, Object> claims, long expirationMs) {
+        return Jwts.builder()
+                .addClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
 }
