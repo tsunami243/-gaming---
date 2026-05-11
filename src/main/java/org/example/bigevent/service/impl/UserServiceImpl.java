@@ -3,10 +3,10 @@ package org.example.bigevent.service.impl;
 import org.example.bigevent.mapper.UserMapper;
 import org.example.bigevent.pojo.User;
 import org.example.bigevent.service.UserService;
-import org.example.bigevent.utils.Md5Util;
 import org.example.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +18,8 @@ public class UserServiceImpl implements UserService {
     UserMapper userMapper;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public User findByUserName(String username) {
@@ -27,10 +29,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(String username, String password) {
-        //先加密
-        String md5String = Md5Util.getMD5String(password);
-        //添加
-        userMapper.add(username,md5String);
+        //使用 BCrypt 加密
+        String encodedPassword = passwordEncoder.encode(password);
+        userMapper.add(username, encodedPassword);
     }
 
     @Override
@@ -50,7 +51,8 @@ public class UserServiceImpl implements UserService {
     public void updatePwd(String newPwd) {
         Map<String, Object> tmp = ThreadLocalUtil.get();
         Integer id = (Integer) tmp.get("userId");
-        userMapper.updatePwd(Md5Util.getMD5String(newPwd),id);
+        String password = passwordEncoder.encode(newPwd);
+        userMapper.updatePwd(password, id);
         //更新密码后立马删除redis中存入的token
         stringRedisTemplate.opsForValue().getOperations().delete("token" + id);
     }
