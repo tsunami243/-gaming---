@@ -1,15 +1,32 @@
-# 灵境 gaming - 后端服务
+# 灵境 gaming - 游戏资讯与社区平台
 
-基于 Spring Boot + MyBatis + MySQL + Redis 构建的游戏新闻与社区平台后端服务。
+基于 Spring Boot + Vue 3 构建的游戏新闻与社区平台，支持文章发布、评论互动、用户收藏、热度计算等功能。
+
+## 项目结构
+
+```
+gaming/
+├── src/                    # 后端 Spring Boot 代码
+├── gaming-news/            # 前端 Vue 3 代码
+├── sql/                    # 数据库SQL脚本
+├── pom.xml                 # 后端 Maven 配置
+└── README.md               # 项目说明文档
+```
 
 ## 技术栈
 
+### 后端
 - **框架**: Spring Boot 3.x
-- **ORM**: MyBatis + MyBatis-Plus
+- **ORM**: MyBatis
 - **数据库**: MySQL 8.x
 - **缓存**: Redis
 - **认证**: JWT
-- **分页**: PageHelper
+
+### 前端
+- **框架**: Vue 3
+- **构建工具**: Vite
+- **HTTP客户端**: axios
+- **UI**: Element Plus
 
 ## 功能特性
 
@@ -19,45 +36,31 @@
 - 文章收藏与点赞
 - 浏览量追踪与热度计算
 - 轮播图管理
-- 文件上传（阿里云OSS）
 
-## 项目结构
+## 快速启动
 
+### 后端
+
+```bash
+cd gaming
+./mvnw spring-boot:run
 ```
-src/main/java/org/example/bigevent/
-├── controller/     # REST API控制器
-├── service/        # 业务逻辑层
-├── mapper/         # MyBatis Mapper接口
-├── pojo/           # 数据实体类
-├── utils/          # 工具类
-└── interceptors/   # 拦截器（JWT认证）
+
+### 前端
+
+```bash
+cd gaming/gaming-news
+npm install
+npm run dev
 ```
 
 ## 数据库
 
 数据库名: `big_event`
 
-启动前需创建数据库并导入 `sql/schema.sql` 中的表结构。
-
-## 配置
-
-配置文件: `src/main/resources/application.yml`
-
-主要配置项：
-- 数据库连接 (MySQL)
-- Redis连接
-- JWT密钥
+启动后端前需创建数据库并导入 `sql/schema.sql` 中的表结构。
 
 ## API端口
 
-后端服务默认运行在 `http://localhost:8080`
-
-## 运行
-
-```bash
-# 开发环境
-./mvnw spring-boot:run
-
-# 打包
-./mvnw package
-```
+- 后端: `http://localhost:8080`
+- 前端: `http://localhost:5173`
