@@ -33,3 +33,33 @@ CREATE TABLE IF NOT EXISTS `article_favorite` (
 -- ALTER TABLE `article` ADD COLUMN `favorites` int DEFAULT 0 COMMENT '收藏数' AFTER `unique_views`;
 -- ALTER TABLE `article` ADD COLUMN `tags` varchar(500) DEFAULT '' COMMENT '标签，JSON数组格式' AFTER `favorites`;
 -- ALTER TABLE `article` ADD COLUMN `is_carousel` tinyint DEFAULT 0 COMMENT '是否轮播图文章，0否，1是' AFTER `tags`;
+
+-- ============================================
+-- 用户角色相关表结构
+-- ============================================
+
+-- 修改 user 表，添加 role 字段
+ALTER TABLE `user` ADD COLUMN `role` varchar(50) DEFAULT 'ROLE_USER' COMMENT '角色';
+
+-- 新建 role 表
+CREATE TABLE IF NOT EXISTS `role` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `role_name` varchar(50) NOT NULL COMMENT '角色名称',
+  `role_alias` varchar(50) NOT NULL COMMENT '角色标识',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 新建 user_role 表
+CREATE TABLE IF NOT EXISTS `user_role` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL COMMENT '用户ID',
+  `role_id` int NOT NULL COMMENT '角色ID',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_role` (`user_id`, `role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 初始化角色数据
+INSERT INTO `role` (`role_name`, `role_alias`) VALUES
+  ('普通用户', 'ROLE_USER'),
+  ('内容管理员', 'ROLE_CONTENT_ADMIN'),
+  ('超级管理员', 'ROLE_SUPER_ADMIN');
