@@ -11,6 +11,7 @@ import org.example.bigevent.utils.ThreadLocalUtil;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +24,17 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/user")
 @Validated
 public class UserController {
+    // 记住我JWT过期时间3天(毫秒)
+    private static final long REMEMBER_ME_EXPIRATION = 1000L * 60 * 60 * 24 * 3; // 3天
+    // 默认JWT过期时间12小时(毫秒)
+    private static final long DEFAULT_EXPIRATION = 1000L * 60 * 60 * 12; // 12小时
+
     @Autowired
     UserService userService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @PostMapping("/register")
     public Result register(@Pattern(regexp = "^//S{5,16}$") String username,
                            @Pattern(regexp = "^//S{5,16}$")String password) {
@@ -41,17 +49,26 @@ public class UserController {
         }
     @PostMapping("/login")
     public Result login(@Pattern(regexp = "^//S{5,16}$") String username,
-                        @Pattern(regexp = "^//S{5,16}$")String password) {
+                        @Pattern(regexp = "^//S{5,16}$")String password,
+                        @RequestParam(required = false, defaultValue = "false") Boolean rememberme) {
         User u = userService.findByUserName(username);
         if (u == null) {
             return Result.error("用户名错误");
         }
-        if (Md5Util.getMD5String(password).equals(u.getPassword())) {
+        if (passwordEncoder.matches(password, u.getPassword())) {
             Map<String,Object> UserMap = new HashMap<>();
             UserMap.put("userId",u.getId());
             UserMap.put("username",u.getUsername());
-            String JwtToken = JwtUtil.genToken(UserMap);
-            stringRedisTemplate.opsForValue().set("token"+u.getId(),JwtToken,12, TimeUnit.HOURS);
+            UserMap.put("password",u.getPassword()); // BCrypt 加密后的密码
+            UserMap.put("role",u.getRole()); // 用户角色
+
+            // 根据rememberme选择过期时间
+            long expiration = Boolean.TRUE.equals(rememberme) ? REMEMBER_ME_EXPIRATION : DEFAULT_EXPIRATION;
+            String JwtToken = JwtUtil.genToken(UserMap, expiration);
+
+            // Redis存储时间也要对应（秒）
+            long redisExpireSeconds = expiration / 1000;
+            stringRedisTemplate.opsForValue().set("token"+u.getId(),JwtToken,redisExpireSeconds, TimeUnit.SECONDS);
 
             return Result.success(JwtToken);
         }
