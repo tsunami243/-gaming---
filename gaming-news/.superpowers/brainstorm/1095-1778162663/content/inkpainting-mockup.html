@@ -1,0 +1,120 @@
+<h2>黑白水墨江山 — 完整落地页设计</h2>
+<p class="subtitle">纯黑白灰水墨画风格 + 山峦云雾流动动画 + 墨迹散开效果</p>
+
+<div class="mockup">
+  <div class="mockup-header">预览：水墨江山风格落地页</div>
+  <div class="mockup-body">
+    <div style="background: #f5f5f0; height: 280px; position: relative; overflow: hidden; font-family: 'SimSun', 'STSong', serif;">
+
+      <!-- 水墨山峦层1 (远景) -->
+      <svg style="position: absolute; bottom: 0; left: 0; right: 0; height: 180px;" viewBox="0 0 1200 180" preserveAspectRatio="none">
+        <path d="M0,180 L0,120 Q100,60 200,100 T400,80 T600,90 T800,70 T1000,85 T1200,75 L1200,180 Z" fill="#e8e8e4" opacity="0.7"/>
+      </svg>
+
+      <!-- 水墨山峦层2 (中景) -->
+      <svg style="position: absolute; bottom: 0; left: 0; right: 0; height: 150px;" viewBox="0 0 1200 150" preserveAspectRatio="none">
+        <path d="M0,150 L0,100 Q150,40 300,80 T600,60 T900,75 T1200,65 L1200,150 Z" fill="#d0d0cc" opacity="0.85"/>
+      </svg>
+
+      <!-- 水墨山峦层3 (近景) -->
+      <svg style="position: absolute; bottom: 0; left: 0; right: 0; height: 120px;" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,120 L0,70 Q200,20 400,50 T800,30 T1200,55 L1200,120 Z" fill="#a0a09c" opacity="0.9"/>
+      </svg>
+
+      <!-- 飘动云雾 -->
+      <div style="position: absolute; top: 20%; left: -20%; width: 60%; height: 60px; background: radial-gradient(ellipse at center, rgba(200,200,195,0.4) 0%, transparent 70%); animation: cloudDrift1 15s ease-in-out infinite;"></div>
+      <div style="position: absolute; top: 40%; left: -10%; width: 50%; height: 50px; background: radial-gradient(ellipse at center, rgba(210,210,205,0.3) 0%, transparent 70%); animation: cloudDrift2 20s ease-in-out infinite;"></div>
+      <div style="position: absolute; top: 55%; left: 50%; width: 40%; height: 40px; background: radial-gradient(ellipse at center, rgba(200,200,195,0.35) 0%, transparent 70%); animation: cloudDrift3 18s ease-in-out infinite reverse;"></div>
+
+      <!-- 水波纹 -->
+      <svg style="position: absolute; bottom: 30px; left: 0; right: 0; height: 30px;" viewBox="0 0 1200 30" preserveAspectRatio="none">
+        <path d="M0,15 Q50,5 100,15 T200,15 T300,15 T400,15 T500,15 T600,15 T700,15 T800,15 T900,15 T1000,15 T1100,15 T1200,15" stroke="#b0b0ac" stroke-width="1" fill="none" opacity="0.5"/>
+      </svg>
+
+      <!-- 主标题 -->
+      <div style="position: absolute; top: 28%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10;">
+        <div style="font-size: 42px; font-weight: bold; color: #2a2a2a; letter-spacing: 16px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); animation: titleAppear 2s ease-out forwards;">凌竞</div>
+        <div style="font-size: 13px; color: #5a5a5a; letter-spacing: 6px; margin-top: 12px; animation: titleAppear 2s ease-out 0.5s forwards; opacity: 0;">玩游戏 · 看资讯 · 凌竞之上</div>
+      </div>
+
+      <!-- 入口按钮 -->
+      <div style="position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); animation: titleAppear 2s ease-out 1s forwards; opacity: 0;">
+        <div style="padding: 14px 40px; border: 2px solid #3a3a3a; color: #3a3a3a; font-size: 15px; letter-spacing: 4px; background: rgba(245,245,240,0.8); cursor: pointer; transition: all 0.3s;">
+          当机立断往里进 →
+        </div>
+      </div>
+
+      <!-- 制作者：tsunami - 墨迹散开效果 -->
+      <div style="position: absolute; bottom: 12px; right: 16px; font-size: 11px; color: #7a7a7a; letter-spacing: 1px; z-index: 10;">
+        <span style="display: inline-block; animation: inkSpread 3s ease-out 1.5s forwards; opacity: 0; transform: scale(0.1);">制作者：tsunami</span>
+      </div>
+
+    </div>
+    <style>
+      @keyframes cloudDrift1 {
+        0%,100% { transform: translateX(0); opacity: 0.4; }
+        50% { transform: translateX(30%); opacity: 0.2; }
+      }
+      @keyframes cloudDrift2 {
+        0%,100% { transform: translateX(0); opacity: 0.3; }
+        50% { transform: translateX(25%); opacity: 0.15; }
+      }
+      @keyframes cloudDrift3 {
+        0%,100% { transform: translateX(0); opacity: 0.35; }
+        50% { transform: translateX(-20%); opacity: 0.2; }
+      }
+      @keyframes titleAppear {
+        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+      @keyframes inkSpread {
+        0% { opacity: 0; transform: scale(0.1); filter: blur(4px); }
+        30% { opacity: 0.6; transform: scale(0.5); filter: blur(2px); }
+        60% { opacity: 0.8; transform: scale(0.8); filter: blur(1px); }
+        100% { opacity: 1; transform: scale(1); filter: blur(0); }
+      }
+    </style>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>设计说明</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>视觉元素</h4>
+      <ul>
+        <li>纯黑白灰水墨色调 (#f5f5f0 宣纸白 / #a0a0ac 山墨灰 / #2a2a2a 浓墨黑)</li>
+        <li>三层山峦剪影 (远-中-近)，体现水墨画层次感</li>
+        <li>云雾飘渺动画 (三层错位流动)</li>
+        <li>底部水波纹线条</li>
+        <li>全部使用 SVG + CSS animation 实现，无外部图片依赖</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>动画效果</h4>
+      <ul>
+        <li><strong>云雾：</strong>错位流动，模拟山水画云雾缭绕</li>
+        <li><strong>主标题：</strong>从下方淡入浮现</li>
+        <li><strong>制作者：</strong>墨迹散开效果 (scale + blur 同步变化)</li>
+        <li><strong>按钮：</strong>延迟入场 + hover 水墨晕染效果</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top: 20px;">
+  <div class="option" data-choice="confirm" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h4>确认采用此方案</h4>
+      <p>黑白水墨江山风格，开始实施</p>
+    </div>
+  </div>
+  <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+    <div class="letter">~</div>
+    <div class="content">
+      <h4>需要调整</h4>
+      <p>我想调整某些细节</p>
+    </div>
+  </div>
+</div>
