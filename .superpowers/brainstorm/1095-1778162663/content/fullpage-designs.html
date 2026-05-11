@@ -1,0 +1,126 @@
+<h2>完整落地页水墨风格设计</h2>
+<p class="subtitle">每个方案都包含：动态背景动画 + 文字排版 + 右下角制作者标注</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%); height: 160px; position: relative; overflow: hidden; font-family: serif;">
+        <!-- 云雾动画层 -->
+        <div style="position: absolute; bottom: 30px; left: -10%; right: -10%; height: 60px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: mistFlow 8s ease-in-out infinite;"></div>
+        <div style="position: absolute; bottom: 50px; left: -5%; right: -5%; height: 40px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: mistFlow 12s ease-in-out infinite reverse;"></div>
+        <!-- 山峦剪影 -->
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,120 L0,80 Q150,30 300,70 T600,50 T900,70 T1200,60 L1200,120 Z%22 fill=%22rgba(0,0,0,0.3)%22/></svg>') no-repeat center bottom; background-size: cover;"></div>
+        <!-- 主标题 -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: #e8d5b7; letter-spacing: 12px; text-shadow: 0 0 30px rgba(232,213,183,0.4);">凌竞</div>
+          <div style="font-size: 10px; color: rgba(232,213,183,0.6); letter-spacing: 4px; margin-top: 6px;">玩游戏 · 看资讯</div>
+        </div>
+        <!-- 制作者 右下角 -->
+        <div style="position: absolute; bottom: 8px; right: 12px; font-size: 9px; color: rgba(232,213,183,0.5); letter-spacing: 1px;">制作者：tsunami</div>
+      </div>
+      <style>
+        @keyframes mistFlow { 0%,100% { transform: translateX(-10%); } 50% { transform: translateX(10%); } }
+      </style>
+    </div>
+    <div class="card-body">
+      <h3>方案A：水墨江山</h3>
+      <p><strong>背景：</strong>深蓝墨色渐变 + 山峦剪影 + 云雾飘渺动画<br/>
+      <strong>粒子：</strong>淡白色云雾粒子缓缓飘动<br/>
+      <strong>主色：</strong>米白(#e8d5b7) / 深蓝墨(#1a1a2e)<br/>
+      <strong>动画：</strong>云雾流动 + 文字淡入</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(180deg, #0d1117 0%, #1a2332 50%, #0d1117 100%); height: 160px; position: relative; overflow: hidden; font-family: sans-serif;">
+        <!-- 墨点粒子 -->
+        <div style="position: absolute; inset: 0;">
+          <div style="position: absolute; top: 20%; left: 15%; width: 3px; height: 3px; background: rgba(103,216,249,0.6); border-radius: 50%; animation: inkFloat 4s ease-in-out infinite;"></div>
+          <div style="position: absolute; top: 40%; left: 75%; width: 2px; height: 2px; background: rgba(103,216,249,0.4); border-radius: 50%; animation: inkFloat 5s ease-in-out infinite 1s;"></div>
+          <div style="position: absolute; top: 60%; left: 30%; width: 4px; height: 4px; background: rgba(103,216,249,0.5); border-radius: 50%; animation: inkFloat 6s ease-in-out infinite 2s;"></div>
+          <div style="position: absolute; top: 30%; left: 60%; width: 2px; height: 2px; background: rgba(103,216,249,0.3); border-radius: 50%; animation: inkFloat 3s ease-in-out infinite 0.5s;"></div>
+        </div>
+        <!-- 电光线条 -->
+        <div style="position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, rgba(103,216,249,0.3), transparent);"></div>
+        <!-- 主标题 -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: #67d8f9; letter-spacing: 10px; text-shadow: 0 0 40px rgba(103,216,249,0.5);">凌竞</div>
+          <div style="font-size: 10px; color: rgba(103,216,249,0.5); letter-spacing: 4px; margin-top: 6px;">玩游戏 · 看资讯</div>
+        </div>
+        <!-- 制作者 右下角 -->
+        <div style="position: absolute; bottom: 8px; right: 12px; font-size: 9px; color: rgba(103,216,249,0.4); letter-spacing: 1px;">制作者：tsunami</div>
+      </div>
+      <style>
+        @keyframes inkFloat { 0%,100% { transform: translateY(0) scale(1); opacity: 0.6; } 50% { transform: translateY(-20px) scale(1.5); opacity: 0.2; } }
+      </style>
+    </div>
+    <div class="card-body">
+      <h3>方案B：墨韵电竞</h3>
+      <p><strong>背景：</strong>深空黑 + 赛博蓝电光<br/>
+      <strong>粒子：</strong>墨点光粒悬浮 + 电光线穿梭<br/>
+      <strong>主色：</strong>电光蓝(#67d8f9) / 墨黑(#0d1117)<br/>
+      <strong>动画：</strong>墨点漂浮 + 光线脉动</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(180deg, #1a1214 0%, #2d1b3d 30%, #1a1a2e 70%, #0d1b2a 100%); height: 160px; position: relative; overflow: hidden; font-family: serif;">
+        <!-- 飞鸟/花瓣 -->
+        <div style="position: absolute; inset: 0;">
+          <div style="position: absolute; top: 15%; left: 20%; width: 8px; height: 3px; background: linear-gradient(90deg, rgba(255,200,150,0.6), transparent); transform: rotate(-30deg); animation: birdFly 6s linear infinite;"></div>
+          <div style="position: absolute; top: 25%; left: 60%; width: 6px; height: 2px; background: linear-gradient(90deg, rgba(255,200,150,0.4), transparent); transform: rotate(-25deg); animation: birdFly 8s linear infinite 2s;"></div>
+          <div style="position: absolute; top: 35%; left: 40%; width: 5px; height: 2px; background: linear-gradient(90deg, rgba(255,200,150,0.3), transparent); transform: rotate(-35deg); animation: birdFly 7s linear infinite 4s;"></div>
+        </div>
+        <!-- 印章效果装饰 -->
+        <div style="position: absolute; top: 15px; left: 15px; width: 30px; height: 30px; border: 2px solid rgba(200,80,80,0.4); display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(200,80,80,0.5);">印</div>
+        <!-- 主标题 -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: #ffd700; letter-spacing: 10px; text-shadow: 0 0 30px rgba(255,215,0,0.3);">凌竞</div>
+          <div style="font-size: 10px; color: rgba(255,215,0,0.5); letter-spacing: 4px; margin-top: 6px;">玩游戏 · 看资讯</div>
+        </div>
+        <!-- 制作者 右下角 -->
+        <div style="position: absolute; bottom: 8px; right: 12px; font-size: 9px; color: rgba(255,200,150,0.4); letter-spacing: 1px;">制作者：tsunami</div>
+      </div>
+      <style>
+        @keyframes birdFly { 0% { transform: translateX(0) rotate(-30deg); opacity: 0.6; } 100% { transform: translateX(200px) rotate(-30deg); opacity: 0; } }
+      </style>
+    </div>
+    <div class="card-body">
+      <h3>方案C：朱砂点墨</h3>
+      <p><strong>背景：</strong>墨紫渐变 + 古建筑剪影<br/>
+      <strong>粒子：</strong>飞鸟掠影 + 墨点飘散<br/>
+      <strong>主色：</strong>朱砂金(#ffd700) / 印章红(#c85050)<br/>
+      <strong>动画：</strong>飞鸟掠过 + 墨点散落</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>关于"制作者：tsunami"动画</h3>
+  <p class="subtitle">方案A/B/C都支持以下动画效果之一</p>
+  <div class="options">
+    <div class="option" data-choice="slide-right" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h4>从右侧滑入</h4>
+        <p>文字从右向左滑动入场，与整体动画协调</p>
+      </div>
+    </div>
+    <div class="option" data-choice="fade-up" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h4>从底部浮入</h4>
+        <p>淡入 + 微微上浮，儒雅内敛</p>
+      </div>
+    </div>
+    <div class="option" data-choice="ink-spread" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h4>墨迹散开</h4>
+        <p>模拟墨迹在纸上散开的效果，独具特色</p>
+      </div>
+    </div>
+  </div>
+</div>
