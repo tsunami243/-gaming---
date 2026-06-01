@@ -1,117 +1,55 @@
 <template>
-  <div class="top-nav glass" :class="{ hidden: isHidden }">
-    <div class="nav-content">
-      <div class="nav-left">
-        <img src="../assets/logos/main.jpg" alt="Logo" class="logo" @click="$router.push('/')" />
-      </div>
-      <div class="nav-right">
-        <div class="nav-icon-btn" @click="handleSearch">
-          <n-icon size="20" :component="Search" />
-        </div>
-        <div class="nav-icon-btn" @click="handleMessage">
-          <n-icon size="20" :component="ChatboxEllipses" />
-        </div>
+  <header class="top-nav" :class="{ hidden: isHidden }">
+    <div class="nav-inner">
+      <span class="logo" @click="$router.push('/home')">
+        <span class="logo-symbol">◉</span>
+        <span class="logo-text">GAMEBOI</span>
+      </span>
+      <div class="nav-actions">
+        <button class="nav-btn" @click="$router.push('/publish')">+ POST</button>
+        <button class="nav-btn secondary" @click="$router.push('/user')">☻</button>
       </div>
     </div>
-  </div>
+  </header>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { NIcon } from 'naive-ui'
-import { Search, ChatboxEllipses } from '@vicons/ionicons5'
-
 const isHidden = ref(false)
-let lastScrollY = 0
-
-const handleScroll = () => {
-  const currentScrollY = window.scrollY
-  if (currentScrollY > lastScrollY && currentScrollY > 50) {
-    isHidden.value = true
-  } else {
-    isHidden.value = false
-  }
-  lastScrollY = currentScrollY
-}
-
-const handleSearch = () => {
-  console.log('search')
-}
-
-const handleMessage = () => {
-  console.log('message')
-}
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+let lastY = 0
+const onScroll = () => { const y = window.scrollY; isHidden.value = y > lastY && y > 50; lastY = y }
+onMounted(() => window.addEventListener('scroll', onScroll))
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>
 .top-nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: #111;
+  border-bottom: 2px solid #fff;
   transform: translateY(0);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s;
+}
+.top-nav.hidden { transform: translateY(-100%); }
+
+.nav-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  height: 42px; padding: 0 16px; max-width: 1000px; margin: 0 auto;
 }
 
-.top-nav.hidden {
-  transform: translateY(-100%);
-}
+.logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.logo-symbol { font-size: 16px; color: #FBBF24; }
+.logo-text { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #fff; letter-spacing: 2px; }
 
-.nav-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 52px;
-  padding: 0 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+.nav-actions { display: flex; gap: 6px; }
+.nav-btn {
+  font-family: 'Press Start 2P', monospace; font-size: 7px;
+  padding: 6px 10px; background: #222; border: 2px solid #fff; color: #fff; cursor: pointer;
+  transition: all 0.1s;
 }
-
-.nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 28px;
-  width: auto;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.nav-right {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.nav-icon-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  color: var(--apple-text-secondary);
-  transition: all 0.2s ease;
-}
-
-.nav-icon-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--apple-text-primary);
-}
-
-.nav-icon-btn:active {
-  transform: scale(0.95);
-}
+.nav-btn:hover { background: #333; }
+.nav-btn:active { transform: translateY(1px); }
+.nav-btn.secondary { border-color: #555; color: #aaa; padding: 6px 8px; font-size: 12px; }
 </style>

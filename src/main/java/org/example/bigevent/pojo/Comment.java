@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Comment {
-    @NotNull(message = "评论ID不能为空")
-    private Integer id;//主键ID
+    private Integer id;//主键ID（新建时自动生成）
     private Integer articleId;//文章ID
     private Integer userId;//评论用户ID
     private String userName;//评论用户名

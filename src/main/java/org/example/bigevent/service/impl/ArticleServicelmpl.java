@@ -34,32 +34,33 @@ public class ArticleServicelmpl implements ArticleService {
 
     @Override
     public void addArticle(Article article) {
+        Map<String,Object> map= ThreadLocalUtil.get();
+        addArticle(article, (Integer) map.get("userId"));
+    }
+
+    @Override
+    public void addArticle(Article article, Integer createUser) {
         article.setCreateTime(LocalDateTime.now());
         article.setUpdateTime(LocalDateTime.now());
-        Map<String,Object> map= ThreadLocalUtil.get();
-        article.setCreateUser((Integer) map.get("userId"));
+        article.setCreateUser(createUser);
+        if (article.getCoverImg() == null) {
+            article.setCoverImg("");
+        }
         articleMapper.add(article);
     }
 
     @Override
     public PageBean<Article> list(Integer pageNum, Integer pageSize, Integer categoryId, String state) {
-        //创建pageBean对象
         PageBean<Article> pageBean = new PageBean<>();
 
-        //开启分页查询pageHelper
-        //他会将查询结果封装到Page对象中，还会将传入的参数拼接在sql语句中，实现动态sql查询
         PageHelper.startPage(pageNum, pageSize);
-        //从ThreadLocal中获取用户id
-        Map<String,Object> map= ThreadLocalUtil.get();
-        Integer userId=(Integer)map.get("userId");
-        //调用mapper查询方法
-        List<Article> list = articleMapper.list(categoryId,state,userId);
+        // 公开列表不按用户过滤，只按分类和状态筛选
+        List<Article> list = articleMapper.list(categoryId, state, null);
         if (list instanceof Page) {
             Page<Article> page = (Page<Article>) list;
             pageBean.setTotal(page.getTotal());
             pageBean.setItems(page.getResult());
         } else {
-            // 如果不是Page类型，手动设置
             pageBean.setTotal((long) list.size());
             pageBean.setItems(list);
         }
@@ -69,29 +70,32 @@ public class ArticleServicelmpl implements ArticleService {
 
     @Override
     public void update(Article article) {
+        Map<String,Object> map = ThreadLocalUtil.get();
+        Integer userId = (Integer) map.get("userId");
+        Article existing = articleMapper.detail(article.getId());
+        if (existing == null) {
+            throw new RuntimeException("文章不存在");
+        }
+        if (!userId.equals(existing.getCreateUser())) {
+            throw new RuntimeException("无权修改他人文章");
+        }
         article.setUpdateTime(LocalDateTime.now());
-        //从ThreadLocal中获取用户id
-        Map<String,Object> map= ThreadLocalUtil.get();
-        Integer userId=(Integer)map.get("userId");
         article.setCreateUser(userId);
+        if (article.getCoverImg() == null) {
+            article.setCoverImg("");
+        }
         articleMapper.update(article);
     }
 
     @Override
     public Article detail(Integer id) {
-        Map<String,Object> map= ThreadLocalUtil.get();
-        Integer userId=(Integer)map.get("userId");
-        //调用mapper查询方法
-        Article article = articleMapper.detail(id,userId);
-        return article;
+        return articleMapper.detail(id);
     }
 
     @Override
     public void delete(Integer id) {
-
         Map<String,Object> map= ThreadLocalUtil.get();
         Integer userId=(Integer)map.get("userId");
-        //调用mapper查询方法
         articleMapper.delete(id,userId);
     }
 

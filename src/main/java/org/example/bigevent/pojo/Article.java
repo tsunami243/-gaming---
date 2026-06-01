@@ -11,8 +11,7 @@ import org.hibernate.validator.constraints.URL;
 import java.time.LocalDateTime;
 
 public class Article {
-    @NotNull(message = "文章ID不能为空")
-    private Integer id;//主键ID
+    private Integer id;//主键ID（新建时自动生成，更新时必传）
     @NotEmpty(message = "文章标题不能为空")
     @Pattern(regexp = "^[\\S ]{1,50}$",message = "文章标题只能包含字母、数字、下划线、中文和空格")
     private String title;//文章标题

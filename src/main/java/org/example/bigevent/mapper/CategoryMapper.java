@@ -11,8 +11,8 @@ public interface CategoryMapper {
             "values(#{categoryName},#{categoryAlias},#{createUser},#{createTime},#{updateTime})")
     void add(Category category);
 
-    @Select("select * from category where create_user = #{userId}")
-    List<Category> list(Integer userId);
+    @Select("<script>select * from category <where><if test='userId != null'>create_user = #{userId}</if></where></script>")
+    List<Category> list(@Param("userId") Integer userId);
 
     @Select("select * from category where id = #{id}")
     Category finById(Integer id);

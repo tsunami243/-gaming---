@@ -9,7 +9,7 @@ import java.util.List;
 public interface CommentMapper {
 
     //添加评论
-    @Insert("insert into comment (article_id, user_id, user_name, user_avatar, content, parent_id, reply_id, reply_user_name, create_time, update_time) values (#{articleId}, #{userId}, #{userName}, #{userAvatar}, #{content}, #{parentId}, #{replyId}, #{replyUserName}, #{createTime}, #{updateTime})")
+    @Insert("insert into comment (article_id, user_id, parent_id, content, create_time) values (#{articleId}, #{userId}, #{parentId}, #{content}, #{createTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void add(Comment comment);
 

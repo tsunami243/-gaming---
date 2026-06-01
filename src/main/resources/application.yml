@@ -9,6 +9,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+# JWT 配置
+jwt:
+  secret-key: ${JWT_SECRET_KEY:tsunami1234567890abcdefghijklmnopqrstuvwxyz}
+  expiration: 43200000  # 12小时（毫秒）
+
 #配置MyBatis
 mybatis:
   mapper-locations: classpath:org/example/bigevent/mapper/*.xml

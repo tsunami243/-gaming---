@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Python ###
+__pycache__/
+*.pyc
+ingest/.env
+
+### Node ###
+gaming-news/node_modules/
+gaming-news/dist/

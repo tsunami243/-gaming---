@@ -13,7 +13,9 @@
             <if test="state!=null">
                 and state=#{state}
             </if>
-            and create_user=#{userId}
+            <if test="userId!=null">
+                and create_user=#{userId}
+            </if>
         </where>
     </select>
 </mapper>

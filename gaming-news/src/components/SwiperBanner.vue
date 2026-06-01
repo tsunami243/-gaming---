@@ -49,15 +49,14 @@ onMounted(async () => {
 
 <style scoped>
 .swiper-banner {
-  margin: 16px;
-  border-radius: var(--apple-radius-lg);
+  margin: 12px;
+  border: 3px solid #111;
   overflow: hidden;
-  box-shadow: var(--apple-shadow-md);
 }
 
 .banner-item {
   width: 100%;
-  height: 200px;
+  height: 180px;
   background-size: cover;
   background-position: center;
   cursor: pointer;
@@ -66,36 +65,27 @@ onMounted(async () => {
 .banner-overlay {
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%);
   display: flex;
-  align-items: center;
-  padding: 24px;
+  align-items: flex-end;
+  padding: 16px;
 }
 
 .banner-content {
-  color: var(--color-white);
-  max-width: 60%;
-}
-
-.banner-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: var(--apple-radius-sm);
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  color: #fff;
 }
 
 .banner-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  line-height: 1.4;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  margin-bottom: 4px;
+  line-height: 1.5;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .banner-desc {
-  font-size: 14px;
-  opacity: 0.9;
-  line-height: 1.5;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  opacity: 0.8;
 }
 </style>

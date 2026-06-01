@@ -3,64 +3,45 @@
     <div class="tabs-wrapper">
       <div
         v-for="tab in tabs"
-        :key="tab.key"
+        :key="tab.id ?? 'all'"
         class="tab-item"
-        :class="{ active: currentTab === tab.key }"
+        :class="{ active: currentTab === tab.id }"
         :style="{ '--category-color': tab.color }"
         @mouseenter="handleHover(tab, $event)"
         @mouseleave="handleLeave"
-        @click="handleClick(tab.key)"
+        @click="handleClick(tab)"
       >
         <span class="tab-text">{{ tab.name }}</span>
-        <div
-          v-if="hoveredTab?.key === tab.key && tab.key !== 'all'"
-          class="logo-bubble"
-          :style="{ backgroundColor: tab.color }"
-        >
-          <div class="bubble-body">
-            <img :src="getLogo(tab.logo)" :alt="tab.name" class="bubble-logo" />
-          </div>
-          <div class="bubble-arrow" :style="{ borderTopColor: tab.color }"></div>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue'
-import { categories } from '../utils/category'
-import deltaForceLogo from '../assets/logos/三角洲行动.png'
-import valorantLogo from '../assets/logos/无畏契约.jpg'
-import cs2Logo from '../assets/logos/cs2.png'
-import apexLogo from '../assets/logos/apex.jpg'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useCategoryStore } from '../stores/category'
 
 const emit = defineEmits(['category-change'])
+const categoryStore = useCategoryStore()
 
-const tabs = [
-  { key: 'all', name: '全部', color: '#1A1A1A', logo: null },
-  ...categories
-]
+const tabs = computed(() => [
+  { id: null, name: '全部', color: '#1A1A1A' },
+  ...categoryStore.items.map(c => ({
+    id: c.id,
+    name: c.categoryName,
+    color: '#007AFF'
+  }))
+])
 
-const currentTab = ref('all')
+const currentTab = ref(null)
 const hoveredTab = ref(null)
 
-const logoMap = {
-  'delta-force': deltaForceLogo,
-  'valorant': valorantLogo,
-  'cs2': cs2Logo,
-  'apex': apexLogo
-}
-
-const getLogo = (logo) => {
-  if (!logo) return ''
-  return logoMap[logo] || ''
-}
+const getLogo = () => ''
 
 let hoverTimer = null
 
 const handleHover = (tab) => {
-  if (tab.key === 'all') return
+  if (!tab.id) return
   clearTimeout(hoverTimer)
   hoverTimer = setTimeout(() => {
     hoveredTab.value = tab
@@ -74,10 +55,14 @@ const handleLeave = () => {
   }, 80)
 }
 
-const handleClick = (key) => {
-  currentTab.value = key
-  emit('category-change', key)
+const handleClick = (tab) => {
+  currentTab.value = tab.id
+  emit('category-change', tab.id)
 }
+
+onMounted(async () => {
+  await categoryStore.fetchCategories()
+})
 
 onUnmounted(() => {
   clearTimeout(hoverTimer)

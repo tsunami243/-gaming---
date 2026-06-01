@@ -19,33 +19,54 @@ const routes = [
   {
     path: '/user',
     name: 'User',
-    component: () => import('../views/UserView.vue')
+    component: () => import('../views/UserView.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/publish',
     name: 'Publish',
-    component: () => import('../views/PublishView.vue')
+    component: () => import('../views/PublishView.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/message',
     name: 'Message',
-    component: () => import('../views/MessageView.vue')
+    component: () => import('../views/MessageView.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/LoginView.vue')
+    component: () => import('../views/LoginView.vue'),
+    meta: { guestOnly: true }
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../views/RegisterView.vue')
+    component: () => import('../views/RegisterView.vue'),
+    meta: { guestOnly: true }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+function getToken() {
+  return localStorage.getItem('token')
+}
+
+router.beforeEach((to, from, next) => {
+  const token = getToken()
+
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+  } else if (to.meta.guestOnly && token) {
+    next({ name: 'Home' })
+  } else {
+    next()
+  }
 })
 
 export default router

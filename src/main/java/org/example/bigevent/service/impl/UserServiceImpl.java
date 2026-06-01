@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -55,5 +56,10 @@ public class UserServiceImpl implements UserService {
         userMapper.updatePwd(password, id);
         //更新密码后立马删除redis中存入的token
         stringRedisTemplate.opsForValue().getOperations().delete("token" + id);
+    }
+
+    @Override
+    public List<User> list() {
+        return userMapper.list();
     }
 }

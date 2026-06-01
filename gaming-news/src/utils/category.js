@@ -1,8 +1,8 @@
 export const categories = [
-  { id: 1, name: '三角洲行动', color: '#00A86B', key: 'delta-force', logo: 'delta-force' },
-  { id: 2, name: '无畏契约', color: '#FF6B6B', key: 'valorant', logo: 'valorant' },
-  { id: 3, name: 'Counter-Strike', color: '#FFB800', key: 'cs2', logo: 'cs2' },
-  { id: 4, name: 'Apex Legends', color: '#A52A2A', key: 'apex', logo: 'apex' }
+  { id: 5, name: '三角洲行动', color: '#00A86B', key: 'delta-force', logo: 'delta-force' },
+  { id: 8, name: '无畏契约', color: '#FF6B6B', key: 'valorant', logo: 'valorant' },
+  { id: 9, name: 'Counter-Strike', color: '#FFB800', key: 'cs2', logo: 'cs2' },
+  { id: 10, name: 'Apex Legends', color: '#A52A2A', key: 'apex', logo: 'apex' }
 ]
 
 export const categoryOptions = categories.map(c => ({
@@ -26,8 +26,8 @@ export const getCategoryKey = (id) => {
 }
 
 export const gameLogos = {
-  'delta-force': 'https://cdn.jsdelivr.net/npm/game-logos@1.0.0/delta-force.png',
-  'valorant': 'https://cdn.jsdelivr.net/npm/game-logos@1.0.0/valorant.png',
-  'cs2': 'https://cdn.jsdelivr.net/npm/game-logos@1.0.0/cs2.png',
-  'apex': 'https://cdn.jsdelivr.net/npm/game-logos@1.0.0/apex.png'
+  'delta-force': new URL('../assets/logos/三角洲行动.png', import.meta.url).href,
+  'valorant': new URL('../assets/logos/无畏契约.jpg', import.meta.url).href,
+  'cs2': new URL('../assets/logos/cs2.png', import.meta.url).href,
+  'apex': new URL('../assets/logos/apex.jpg', import.meta.url).href
 }

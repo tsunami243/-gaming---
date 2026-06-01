@@ -6,10 +6,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.example.bigevent.pojo.User;
+
+import java.util.List;
+
 @Mapper
 public interface UserMapper {
     @Select("SELECT * FROM `user` WHERE username = #{username}")
-User findByUsername(@Param("username") String username);
+    User findByUsername(@Param("username") String username);
     @Select("SELECT * FROM `user` WHERE username = #{username}")
     User findByuserName(String username);
     @Insert("INSERT INTO `user`(username,`password`,create_time,update_time)"+
@@ -21,4 +24,6 @@ User findByUsername(@Param("username") String username);
     void updateAvatar(String avatarUrl, Integer id);
     @Update("update user set password = #{md5String},update_time = now() where id = #{id}")
     void updatePwd(String md5String, Integer id);
+    @Select("SELECT * FROM `user`")
+    List<User> list();
 }

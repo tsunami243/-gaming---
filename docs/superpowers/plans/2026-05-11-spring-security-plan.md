@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将项目从自定义JWT拦截器迁移到Spring Security，实现用户认证和RBAC权限分级
+**Goal:** 将项目从自定义JWT拦截器迁移到Spring Security，实现用户认证和RBAC权限分级，支持RememberMe功能
 
-**Architecture:** 使用Spring Security Filter Chain处理JWT认证，BCrypt加密密码，RBAC实现权限控制。原有JWT Token格式保留，渐进式迁移。
+**Architecture:** 使用Spring Security Filter Chain处理JWT认证，BCrypt加密密码，RBAC实现权限控制。RememberMe时JWT有效期延长至3天。原有JWT Token格式保留，渐进式迁移。
 
 **Tech Stack:** Spring Security 6.x, BCrypt, JWT (jjwt), MySQL, Redis
 
@@ -207,8 +207,28 @@ git commit -m "feat: 创建 UserDetailsServiceImpl 实现"
 
 **Files:**
 - Create: `src/main/java/org/example/bigevent/security/JwtAuthenticationFilter.java`
+- Modify: `src/main/java/org/example/bigevent/utils/JwtUtil.java`（添加带过期时间的重载方法）
 
-- [ ] **Step 1: 创建 JwtAuthenticationFilter**
+- [ ] **Step 1: 修改 JwtUtil.java 添加过期时间参数**
+
+在 `genToken` 方法后添加重载方法：
+```java
+// 生成带自定义过期时间的 Token（用于 RememberMe）
+public static String genToken(Map<String, Object> claims, long expirationMs) {
+    return Jwts.builder()
+            .addClaims(claims)
+            .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+            .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+            .compact();
+}
+
+// 原有的 12 小时 Token（默认）
+public static String genToken(Map<String, Object> claims) {
+    return genToken(claims, 1000 * 60 * 60 * 12);
+}
+```
+
+- [ ] **Step 2: 创建 JwtAuthenticationFilter**
 
 ```java
 package org.example.bigevent.security;
@@ -230,7 +250,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -278,9 +297,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 Run: `cd gaming && ./mvnw compile`
 Expected: BUILD SUCCESS
 
-- [ ] **Step 2: 提交**
+- [ ] **Step 3: 提交**
 ```bash
-git add src/main/java/org/example/bigevent/security/JwtAuthenticationFilter.java && git commit -m "feat: 创建 JWT 认证过滤器"
+git add src/main/java/org/example/bigevent/security/JwtAuthenticationFilter.java
+git add src/main/java/org/example/bigevent/utils/JwtUtil.java
+git commit -m "feat: 创建 JWT 认证过滤器，添加 RememberMe 支持"
 ```
 
 ---
@@ -439,8 +460,6 @@ git add src/main/java/org/example/bigevent/service/impl/UserServiceImpl.java && 
 
 - [ ] **Step 1: 修改 UserController**
 
-移除 `@Validated`，简化 login 方法（Spring Security 处理认证）：
-
 ```java
 @RestController
 @RequestMapping("/user")
@@ -450,17 +469,29 @@ public class UserController {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    // 常量：记住我JWT过期时间3天(毫秒)
+    private static final long REMEMBER_ME_EXPIRATION = 1000L * 60 * 60 * 24 * 3; // 3天
+    // 常量：默认JWT过期时间12小时(毫秒)
+    private static final long DEFAULT_EXPIRATION = 1000L * 60 * 60 * 12; // 12小时
+
     @PostMapping("/login")
-    public Result login(String username, String password) {
-        // Spring Security 进行认证，这里生成 JWT 返回
+    public Result login(String username, String password,
+                        @RequestParam(required = false, defaultValue = "false") Boolean rememberme) {
         try {
             User user = userService.login(username, password);
             Map<String, Object> UserMap = new HashMap<>();
             UserMap.put("userId", user.getId());
             UserMap.put("username", user.getUsername());
             UserMap.put("password", user.getPassword()); // BCrypt 加密后的密码
-            String JwtToken = JwtUtil.genToken(UserMap);
-            stringRedisTemplate.opsForValue().set("token" + user.getId(), JwtToken, 12, TimeUnit.HOURS);
+
+            // 根据rememberme选择过期时间
+            long expiration = Boolean.TRUE.equals(rememberme) ? REMEMBER_ME_EXPIRATION : DEFAULT_EXPIRATION;
+            String JwtToken = JwtUtil.genToken(UserMap, expiration);
+
+            // Redis存储时间也要对应（秒）
+            long redisExpireSeconds = expiration / 1000;
+            stringRedisTemplate.opsForValue().set("token" + user.getId(), JwtToken, redisExpireSeconds, TimeUnit.SECONDS);
+
             return Result.success(JwtToken);
         } catch (Exception e) {
             return Result.error("用户名或密码错误");
@@ -482,7 +513,7 @@ public class UserController {
 
 - [ ] **Step 2: 提交**
 ```bash
-git add src/main/java/org/example/bigevent/controller/UserController.java && git commit -m "feat: UserController 适配 Spring Security 认证"
+git add src/main/java/org/example/bigevent/controller/UserController.java && git commit -m "feat: UserController 支持 RememberMe，JWT过期时间可配置"
 ```
 
 ---

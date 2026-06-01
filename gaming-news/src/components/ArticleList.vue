@@ -1,36 +1,41 @@
 <template>
   <div class="article-list">
-    <div class="list-header">
-      <h3 class="list-title">{{ currentTitle }}</h3>
-      <span class="list-count">共 {{ total }} 篇</span>
-    </div>
     <div class="article-cards">
       <div
         v-for="article in articleList"
         :key="article.id"
-        class="article-card apple-card"
+        class="article-card"
         @click="goToDetail(article.id)"
       >
         <div class="card-image">
-          <img :src="article.coverImage || defaultImage" :alt="article.title" />
+          <img v-if="article.coverImg" :src="article.coverImg" :alt="article.title" />
+          <div v-else class="card-placeholder">
+            <span class="placeholder-icon">▀▄</span>
+          </div>
         </div>
-        <div class="card-content">
+        <div class="card-body">
           <h4 class="card-title">{{ article.title }}</h4>
-          <p class="card-summary">{{ article.summary || stripHtml(article.content)?.slice(0, 60) || '' }}...</p>
+          <p class="card-summary">
+            {{ article.summary || stripHtml(article.content)?.slice(0, 80) || '...' }}
+          </p>
           <div class="card-meta">
-            <span class="meta-tag" :style="{ background: getCategoryColor(article.categoryId) + '15', color: getCategoryColor(article.categoryId) }">
-              {{ getCategoryName(article.categoryId) }}
-            </span>
+            <span class="meta-tag">{{ categoryStore.getName(article.categoryId) }}</span>
             <span class="meta-time">{{ formatTime(article.updateTime) }}</span>
+            <span class="meta-arrow">▶</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="loading-more" v-if="loading">
-      <n-spin size="medium" />
+
+    <!-- 加载中 -->
+    <div v-if="loading" class="status-msg">
+      <span class="loading-dots">▌▌▌</span>
     </div>
-    <div class="no-more" v-else-if="articleList.length === 0">
-      <n-empty description="暂无文章" />
+
+    <!-- 空状态 -->
+    <div v-else-if="articleList.length === 0" class="status-msg">
+      <span class="empty-icon">□</span>
+      <p class="empty-text">NO DATA</p>
     </div>
   </div>
 </template>
@@ -38,51 +43,30 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { NIcon, NEmpty, NSpin } from 'naive-ui'
-import { ChatboxEllipses } from '@vicons/ionicons5'
 import { getArticleList } from '../api/article'
-import { categories, getCategoryName, getCategoryColor } from '../utils/category'
-import { DEFAULT_ARTICLE_IMAGE } from '../utils/constants'
+import { useCategoryStore } from '../stores/category'
 import { stripHtml } from '../utils/format'
 
 const props = defineProps({
-  category: {
-    type: String,
-    default: 'all'
-  }
+  categoryId: { type: Number, default: null },
 })
 
+const emit = defineEmits(['update:total'])
+
 const router = useRouter()
+const categoryStore = useCategoryStore()
 const articleList = ref([])
-const total = ref(0)
 const loading = ref(false)
-const defaultImage = DEFAULT_ARTICLE_IMAGE
-
-const categoryTitleMap = {
-  'all': '最新资讯',
-  'delta-force': '三角洲行动',
-  'valorant': '无畏契约',
-  'cs2': 'Counter-Strike',
-  'apex': 'Apex Legends'
-}
-
-watch(() => props.category, async (newCategory) => {
-  currentTitle.value = categoryTitleMap[newCategory] || '最新资讯'
-  await fetchArticles()
-}, { immediate: true })
 
 const fetchArticles = async () => {
   loading.value = true
   try {
     const params = { pageNum: 1, pageSize: 20 }
-    if (props.category !== 'all') {
-      const cat = categories.find(c => c.key === props.category)
-      if (cat) params.categoryId = cat.id
-    }
+    if (props.categoryId) params.categoryId = props.categoryId
     const res = await getArticleList(params)
     if (res.code === 0) {
-      articleList.value = res.data?.records || []
-      total.value = res.data?.total || 0
+      articleList.value = res.data?.items || []
+      emit('update:total', res.data?.total || 0)
     }
   } catch (error) {
     console.error('获取文章列表失败', error)
@@ -91,70 +75,61 @@ const fetchArticles = async () => {
   }
 }
 
-const goToDetail = (id) => {
-  router.push(`/article/${id}`)
-}
+watch(() => props.categoryId, fetchArticles, { immediate: true })
+onMounted(fetchArticles)
+
+const goToDetail = (id) => router.push(`/article/${id}`)
 
 const formatTime = (time) => {
   if (!time) return ''
-  const date = new Date(time)
-  const now = new Date()
-  const diff = now - date
+  const diff = Date.now() - new Date(time).getTime()
   if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  return `${Math.floor(diff / 86400000)}天前`
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}MIN`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}HR`
+  return `${Math.floor(diff / 86400000)}D`
 }
-
-const currentTitle = ref('最新资讯')
-
-onMounted(fetchArticles)
 </script>
 
 <style scoped>
 .article-list {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.list-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--apple-text-primary);
-}
-
-.list-count {
-  font-size: 13px;
-  color: var(--apple-text-tertiary);
+  padding: 0 12px 16px;
 }
 
 .article-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
+/* ---- 白底黑框像素卡片 ---- */
 .article-card {
   display: flex;
-  gap: 14px;
-  padding: 14px;
+  gap: 12px;
+  padding: 10px;
+  background: #fff;
+  border: 2px solid #ddd;
   cursor: pointer;
+  transition: all 0.08s ease;
 }
 
+.article-card:hover {
+  border-color: #111;
+  background: #fafafa;
+}
+
+.article-card:active {
+  background: #f0f0f0;
+  transform: scale(0.995);
+}
+
+/* ---- 封面图 ---- */
 .card-image {
   flex-shrink: 0;
-  width: 100px;
-  height: 72px;
-  border-radius: var(--apple-radius-md);
+  width: 96px;
+  height: 66px;
+  border: 2px solid #ddd;
   overflow: hidden;
+  background: #f5f5f5;
 }
 
 .card-image img {
@@ -163,19 +138,32 @@ onMounted(fetchArticles)
   object-fit: cover;
 }
 
-.card-content {
+.card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 4px, #e8e8e8 4px, #e8e8e8 8px);
+}
+.placeholder-icon { font-family: monospace; font-size: 16px; color: #ccc; }
+
+/* ---- 卡片正文 ---- */
+.card-body {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-width: 0;
 }
 
 .card-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--apple-text-primary);
-  line-height: 1.4;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #111;
+  margin: 0 0 4px;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -183,10 +171,10 @@ onMounted(fetchArticles)
 }
 
 .card-summary {
-  font-size: 13px;
-  color: var(--apple-text-tertiary);
-  line-height: 1.5;
-  margin-top: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #999;
+  margin: 0 0 6px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -195,27 +183,43 @@ onMounted(fetchArticles)
 
 .card-meta {
   display: flex;
-  gap: 10px;
   align-items: center;
-  font-size: 11px;
-  margin-top: 8px;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
 }
 
 .meta-tag {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-weight: 500;
+  padding: 2px 6px;
+  border: 1px solid #ddd;
+  color: #888;
+  background: #fafafa;
 }
 
-.meta-time {
-  color: var(--apple-text-tertiary);
-}
+.meta-time { color: #bbb; }
 
-.loading-more,
-.no-more {
+.meta-arrow {
+  margin-left: auto;
+  color: #ccc;
+  font-size: 9px;
+}
+.article-card:hover .meta-arrow { color: #111; }
+
+/* ---- 状态 ---- */
+.status-msg {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 40px 0;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 10px;
 }
+.loading-dots {
+  font-family: monospace; font-size: 18px; color: #ccc;
+  animation: blink 0.6s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.empty-icon { font-family: monospace; font-size: 28px; color: #ddd; }
+.empty-text { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ccc; margin: 0; }
 </style>

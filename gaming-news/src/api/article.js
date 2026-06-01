@@ -126,6 +126,11 @@ export const unlikeComment = (commentId) => {
   })
 }
 
+export const favArticle = (articleId) => request({ url: '/article-favorite', method: 'post', params: { articleId } })
+export const unfavArticle = (articleId) => request({ url: '/article-favorite', method: 'delete', params: { articleId } })
+export const checkFaved = (articleId) => request({ url: '/article-favorite/check', method: 'get', params: { articleId } })
+export const recordView = (articleId) => request({ url: '/article-view', method: 'post', params: { articleId } })
+
 export const checkCommentLiked = (commentId) => {
   return request({
     url: '/comment-like/check',

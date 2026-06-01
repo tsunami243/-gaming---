@@ -6,29 +6,34 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
 public class FileUploadController {
-    /**
-     * 文件上传接口
-     * 接收用户上传的文件，并将其保存到服务器指定目录
-     *
-     * @param file 用户上传的文件
-     * @return Result<String> 包含操作结果的响应对象
-     * @throws Exception 文件操作异常
-     */
+
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"
+    );
+
     @PostMapping("/upload")
     public Result<String> upload(MultipartFile file) throws Exception {
-        // 检查是否有文件被上传
         if (file.isEmpty()) {
             return Result.error("未选择文件");
         }
-        // 获取原始文件名
+        if (file.getSize() > MAX_FILE_SIZE) {
+            return Result.error("文件大小不能超过5MB");
+        }
         String fileName = file.getOriginalFilename();
-        // 生成唯一文件名，防止文件名冲突，格式为：UUID.原扩展名
-        String finalName = UUID.randomUUID().toString() + fileName.substring(fileName.lastIndexOf("."));
-        // 上传文件到OSS
+        if (fileName == null || !fileName.contains(".")) {
+            return Result.error("无效的文件名");
+        }
+        String ext = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+            return Result.error("不支持的文件类型，仅允许: " + String.join(", ", ALLOWED_EXTENSIONS));
+        }
+        String finalName = UUID.randomUUID().toString() + ext;
         String url = AliOssUtil.uploadFile(finalName, file.getInputStream());
         return Result.success(url);
     }

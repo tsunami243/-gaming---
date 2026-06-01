@@ -14,9 +14,13 @@ public interface ArticleMapper {
     //@Param注解用于将方法参数绑定到SQL语句中的占位符
     @Update("update article set title=#{article.title},content=#{article.content},cover_img=#{article.coverImg},state=#{article.state},category_id=#{article.categoryId},update_time=#{article.updateTime} where id=#{article.id} and create_user=#{article.createUser}")
     void update(@Param("article") Article article);
-    //根据文章id查询文章详情
+    //根据文章id查询文章详情（不校验用户，公开访问用）
+    @Select("select * from article where id=#{id}")
+    Article detail(@Param("id") Integer id);
+
+    //根据文章id和用户id查询文章详情（校验用户，编辑/删除用）
     @Select("select * from article where id=#{id} and create_user=#{userId}")
-    Article detail(@Param("id") Integer id, @Param("userId") Integer userId);
+    Article detailByUser(@Param("id") Integer id, @Param("userId") Integer userId);
 
     //根据文章id查询文章（不校验用户，用于统计）
     @Select("select * from article where id=#{id}")

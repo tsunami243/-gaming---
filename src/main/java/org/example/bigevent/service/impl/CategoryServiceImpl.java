@@ -27,9 +27,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List list() {
-        Map<String,Object> map = ThreadLocalUtil.get();
-        Integer userId = (Integer) map.get("userId");
-        return categoryMapper.list(userId);
+        // 公开分类列表不过滤用户，所有用户看到全部分类
+        return categoryMapper.list(null);
     }
 
     @Override
@@ -46,8 +45,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(Integer id) {
         Category category = categoryMapper.finById(id);
-        if(category == null){
+        if (category == null) {
             throw new RuntimeException("该分类不存在");
+        }
+        Map<String,Object> map = ThreadLocalUtil.get();
+        Integer userId = (Integer) map.get("userId");
+        if (!userId.equals(category.getCreateUser())) {
+            throw new RuntimeException("无权删除他人分类");
         }
         categoryMapper.delete(id);
     }

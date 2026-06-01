@@ -19,7 +19,7 @@ public class ViewHistoryController {
     @PostMapping
     public Result recordView(@RequestParam Integer articleId, HttpServletRequest request) {
         Map<String, Object> map = ThreadLocalUtil.get();
-        Integer userId = (Integer) map.get("userId");
+        Integer userId = (map != null) ? (Integer) map.get("userId") : null;
         String ipAddress = getClientIp(request);
         viewHistoryService.recordView(articleId, userId, ipAddress);
         return Result.success();

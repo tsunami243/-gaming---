@@ -10,6 +10,8 @@ public interface ArticleService {
 
     void addArticle(Article article);
 
+    void addArticle(Article article, Integer createUser);
+
     PageBean<Article> list(Integer pageNum, Integer pageSize, Integer categoryId, String state);
 
     void update(Article article);

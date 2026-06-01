@@ -26,9 +26,9 @@ export const useUserStore = defineStore('user', {
         this.token = res.data
         localStorage.setItem('token', res.data)
         await this.fetchUserInfo()
-        return true
+        return { ok: true }
       }
-      return false
+      return { ok: false, msg: res.message || '登录失败' }
     },
     async registerAction(username, password) {
       return await register({ username, password })
