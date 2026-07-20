@@ -33,4 +33,8 @@ public interface ArticleMapper {
     //查询轮播图文章列表
     @Select("select * from article where is_carousel = 1 and state = '已发布' order by update_time desc limit #{limit}")
     List<Article> selectCarouselList(@Param("limit") Integer limit);
+
+
+    //根据标签查询文章列表
+    List<Article> searchByTag(@Param("tag") String tag);
 }

@@ -67,10 +67,18 @@ public class ArticleIngestConsumer {
         }
     }
 
-    private Article toArticle(Map<String, Object> map) {
+    Article toArticle(Map<String, Object> map) {
+        String title = str(map, "title");
+        if (title.isBlank()) {
+            throw new IllegalArgumentException("Article title must not be blank");
+        }
+        String content = str(map, "content");
+        if (content.length() < 50) {
+            throw new IllegalArgumentException("Article content too short: " + content.length() + " chars");
+        }
         Article article = new Article();
-        article.setTitle(str(map, "title"));
-        article.setContent(str(map, "content"));
+        article.setTitle(title);
+        article.setContent(content);
         article.setCategoryId(intVal(map, "category_id"));
         article.setCoverImg(str(map, "cover_img"));
         article.setTags(str(map, "tags"));

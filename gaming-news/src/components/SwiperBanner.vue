@@ -49,14 +49,15 @@ onMounted(async () => {
 
 <style scoped>
 .swiper-banner {
-  margin: 12px;
-  border: 3px solid #111;
+  margin: 16px 16px 4px;
+  border: 3px solid var(--gb-darkest);
+  box-shadow: 4px 4px 0 var(--gb-dark);
   overflow: hidden;
 }
 
 .banner-item {
   width: 100%;
-  height: 180px;
+  height: 220px;
   background-size: cover;
   background-position: center;
   cursor: pointer;
@@ -65,27 +66,27 @@ onMounted(async () => {
 .banner-overlay {
   width: 100%;
   height: 100%;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%);
+  background: linear-gradient(to top, rgba(15, 56, 15, 0.85) 0%, rgba(15, 56, 15, 0.1) 60%);
   display: flex;
   align-items: flex-end;
   padding: 16px;
 }
 
 .banner-content {
-  color: #fff;
+  color: var(--gb-lightest);
 }
 
 .banner-title {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 10px;
   margin-bottom: 4px;
   line-height: 1.5;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px rgba(15, 56, 15, 0.8);
 }
 
 .banner-desc {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 11px;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 </style>

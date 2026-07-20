@@ -8,7 +8,7 @@
         @click="goToDetail(article.id)"
       >
         <div class="card-image">
-          <img v-if="article.coverImg" :src="article.coverImg" :alt="article.title" />
+          <img v-if="article.coverImg" :src="article.coverImg" :alt="article.title" class="px-img" />
           <div v-else class="card-placeholder">
             <span class="placeholder-icon">▀▄</span>
           </div>
@@ -92,44 +92,52 @@ const formatTime = (time) => {
 
 <style scoped>
 .article-list {
-  padding: 0 12px 16px;
+  padding: 16px;
 }
 
+/* ---- 卡带网格：≥1400px 3列 / ≥900px 2列 / 移动 1列 ---- */
 .article-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
-/* ---- 白底黑框像素卡片 ---- */
+@media (min-width: 900px) {
+  .article-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1400px) {
+  .article-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---- 像素卡带卡片 ---- */
 .article-card {
   display: flex;
-  gap: 12px;
-  padding: 10px;
-  background: #fff;
-  border: 2px solid #ddd;
+  flex-direction: column;
+  background: var(--gb-light);
+  border: 3px solid var(--gb-darkest);
+  box-shadow: 4px 4px 0 var(--gb-dark);
   cursor: pointer;
-  transition: all 0.08s ease;
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
 }
 
 .article-card:hover {
-  border-color: #111;
-  background: #fafafa;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--gb-darkest);
 }
 
 .article-card:active {
-  background: #f0f0f0;
-  transform: scale(0.995);
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--gb-dark);
 }
 
-/* ---- 封面图 ---- */
+/* ---- 封面图 16:9 ---- */
 .card-image {
-  flex-shrink: 0;
-  width: 96px;
-  height: 66px;
-  border: 2px solid #ddd;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-bottom: 3px solid var(--gb-darkest);
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--gb-lightest);
 }
 
 .card-image img {
@@ -144,9 +152,13 @@ const formatTime = (time) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 4px, #e8e8e8 4px, #e8e8e8 8px);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--gb-lightest), var(--gb-lightest) 4px,
+    var(--gb-light) 4px, var(--gb-light) 8px
+  );
 }
-.placeholder-icon { font-family: monospace; font-size: 16px; color: #ccc; }
+.placeholder-icon { font-family: monospace; font-size: 20px; color: var(--gb-dark); }
 
 /* ---- 卡片正文 ---- */
 .card-body {
@@ -154,16 +166,16 @@ const formatTime = (time) => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  padding: 10px 12px 12px;
 }
 
 .card-title {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: bold;
-  color: #111;
-  margin: 0 0 4px;
-  line-height: 1.3;
+  color: var(--gb-darkest);
+  margin: 0 0 6px;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -171,10 +183,11 @@ const formatTime = (time) => {
 }
 
 .card-summary {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 11px;
-  color: #999;
-  margin: 0 0 6px;
+  color: var(--gb-dark);
+  margin: 0 0 10px;
+  flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -185,25 +198,25 @@ const formatTime = (time) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 9px;
 }
 
 .meta-tag {
   padding: 2px 6px;
-  border: 1px solid #ddd;
-  color: #888;
-  background: #fafafa;
+  border: 1px solid var(--gb-darkest);
+  color: var(--gb-darkest);
+  background: var(--gb-lightest);
 }
 
-.meta-time { color: #bbb; }
+.meta-time { color: var(--gb-dark); }
 
 .meta-arrow {
   margin-left: auto;
-  color: #ccc;
+  color: var(--gb-dark);
   font-size: 9px;
 }
-.article-card:hover .meta-arrow { color: #111; }
+.article-card:hover .meta-arrow { color: var(--gb-darkest); }
 
 /* ---- 状态 ---- */
 .status-msg {
@@ -215,11 +228,11 @@ const formatTime = (time) => {
   gap: 10px;
 }
 .loading-dots {
-  font-family: monospace; font-size: 18px; color: #ccc;
+  font-family: monospace; font-size: 18px; color: var(--gb-dark);
   animation: blink 0.6s step-end infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-.empty-icon { font-family: monospace; font-size: 28px; color: #ddd; }
-.empty-text { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ccc; margin: 0; }
+.empty-icon { font-family: monospace; font-size: 28px; color: var(--gb-dark); }
+.empty-text { font-family: var(--font-pixel); font-size: 10px; color: var(--gb-dark); margin: 0; }
 </style>

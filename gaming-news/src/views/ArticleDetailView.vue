@@ -141,53 +141,51 @@ const submitComment = async () => {
 </script>
 
 <style scoped>
-.page { min-height:100vh; background:#fff; position:relative; padding-bottom:40px; }
-.pixel-bg { position:fixed; inset:0; pointer-events:none; z-index:0; background-image:radial-gradient(circle,#ddd 1px,transparent 1px); background-size:8px 8px; }
+.page { min-height:100vh; background:var(--gb-lightest); position:relative; padding-bottom:40px; }
 
 /* ---- 顶栏 ---- */
-.detail-top { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; background:#fff; border-bottom:3px solid #111; padding:0 16px; height:46px; }
-.back-btn { font-family:'Press Start 2P',monospace; font-size:8px; background:none; border:2px solid #111; padding:6px 10px; cursor:pointer; color:#111; }
-.back-btn:hover { background:#f0f0f0; }
-.top-title { font-family:'Press Start 2P',monospace; font-size:10px; color:#111; letter-spacing:2px; }
+.detail-top { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; background:var(--gb-darkest); border-bottom:3px solid var(--gb-dark); padding:0 16px; height:46px; }
+.back-btn { font-family:var(--font-pixel); font-size:8px; background:var(--gb-light); border:2px solid var(--gb-lightest); padding:6px 10px; cursor:pointer; color:var(--gb-darkest); }
+.back-btn:hover { background:var(--gb-lightest); }
+.top-title { font-family:var(--font-pixel); font-size:10px; color:var(--gb-lightest); letter-spacing:2px; }
 .top-spacer { width:60px; }
 
 /* ---- 卡片 ---- */
-.card { position:relative; z-index:1; max-width:760px; margin:20px auto; background:#fff; border:3px solid #111; padding:28px 24px; }
-.title { font-family:'ZCOOL KuaiLe','Press Start 2P',monospace; font-size:22px; color:#111; margin:0 0 10px; line-height:1.4; }
-.meta { display:flex; gap:8px; font-family:'Courier New',monospace; font-size:12px; color:#888; margin-bottom:18px; flex-wrap:wrap; }
+.card { position:relative; z-index:1; max-width:760px; margin:20px auto; background:var(--gb-light); border:3px solid var(--gb-darkest); box-shadow:6px 6px 0 var(--gb-dark); padding:28px 24px; }
+.title { font-family:var(--font-zh); font-size:22px; color:var(--gb-darkest); margin:0 0 10px; line-height:1.4; }
+.meta { display:flex; gap:8px; font-family:var(--font-body); font-size:12px; color:var(--gb-dark); margin-bottom:18px; flex-wrap:wrap; }
 
-.cover { margin-bottom:18px; border:2px solid #ddd; }
+.cover { margin-bottom:18px; border:3px solid var(--gb-darkest); }
 .cover img { width:100%; display:block; }
 
-.body { font-family:'Courier New',monospace; font-size:15px; line-height:1.8; color:#333; margin-bottom:24px; overflow-wrap:break-word; }
-.body :deep(img) { max-width:100%; height:auto; border:2px solid #ddd; margin:8px 0; }
+.body { font-family:var(--font-body); font-size:15px; line-height:1.8; color:var(--gb-darkest); margin-bottom:24px; overflow-wrap:break-word; }
+.body :deep(img) { max-width:100%; height:auto; border:2px solid var(--gb-dark); margin:8px 0; }
 
 /* ---- 操作栏 ---- */
-.actions { display:flex; align-items:center; gap:12px; padding:14px 0; border-top:2px solid #eee; border-bottom:2px solid #eee; margin-bottom:20px; }
-.act-btn { font-family:'Press Start 2P',monospace; font-size:9px; padding:8px 14px; background:#fff; border:2px solid #ddd; cursor:pointer; color:#888; transition:all .08s; }
-.act-btn:hover:not(:disabled) { border-color:#111; color:#111; }
-.act-btn.on { border-color:#DC2626; color:#DC2626; background:#FFF5F5; }
+.actions { display:flex; align-items:center; gap:12px; padding:14px 0; border-top:2px solid var(--gb-dark); border-bottom:2px solid var(--gb-dark); margin-bottom:20px; }
+.act-btn { font-family:var(--font-pixel); font-size:9px; padding:8px 14px; background:var(--gb-lightest); border:2px solid var(--gb-dark); cursor:pointer; color:var(--gb-dark); transition:all .08s steps(2); }
+.act-btn:hover:not(:disabled) { border-color:var(--gb-darkest); color:var(--gb-darkest); }
+.act-btn.on { border-color:var(--gb-darkest); color:var(--gb-lightest); background:var(--gb-darkest); }
 .act-btn:disabled { opacity:0.4; cursor:default; }
-.login-hint { font-family:'Courier New',monospace; font-size:11px; color:#bbb; }
+.login-hint { font-family:var(--font-body); font-size:11px; color:var(--gb-dark); }
 
 /* ---- 评论 ---- */
-.comments { }
-.section-title { font-family:'Press Start 2P',monospace; font-size:10px; color:#111; margin:0 0 14px; letter-spacing:2px; }
+.section-title { font-family:var(--font-pixel); font-size:10px; color:var(--gb-darkest); margin:0 0 14px; letter-spacing:2px; }
 
 .comment-list { display:flex; flex-direction:column; gap:0; }
-.comment-item { padding:12px 0; border-bottom:1px solid #eee; }
+.comment-item { padding:12px 0; border-bottom:1px solid var(--gb-dark); }
 .comment-head { display:flex; justify-content:space-between; margin-bottom:4px; }
-.comment-user { font-family:'Courier New',monospace; font-size:13px; font-weight:bold; color:#111; }
-.comment-time { font-family:'Courier New',monospace; font-size:10px; color:#bbb; }
-.comment-text { font-family:'Courier New',monospace; font-size:13px; color:#555; margin:0; line-height:1.5; }
-.no-comment { font-family:'Courier New',monospace; font-size:12px; color:#ccc; text-align:center; padding:20px 0; }
+.comment-user { font-family:var(--font-body); font-size:13px; font-weight:bold; color:var(--gb-darkest); }
+.comment-time { font-family:var(--font-body); font-size:10px; color:var(--gb-dark); }
+.comment-text { font-family:var(--font-body); font-size:13px; color:var(--gb-darkest); margin:0; line-height:1.5; }
+.no-comment { font-family:var(--font-body); font-size:12px; color:var(--gb-dark); text-align:center; padding:20px 0; }
 
 .comment-form { display:flex; gap:8px; margin-top:14px; }
-.cmt-input { flex:1; padding:10px 12px; border:2px solid #ddd; font-family:'Courier New',monospace; font-size:13px; outline:none; }
-.cmt-input:focus { border-color:#111; }
-.cmt-btn { padding:10px 16px; background:#111; border:2px solid #111; color:#fff; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; }
+.cmt-input { flex:1; padding:10px 12px; border:2px solid var(--gb-dark); background:var(--gb-lightest); color:var(--gb-darkest); font-family:var(--font-body); font-size:13px; outline:none; }
+.cmt-input:focus { border-color:var(--gb-darkest); }
+.cmt-btn { padding:10px 16px; background:var(--gb-darkest); border:2px solid var(--gb-darkest); color:var(--gb-lightest); font-family:var(--font-pixel); font-size:8px; cursor:pointer; }
 .cmt-btn:disabled { opacity:0.4; }
-.cmt-btn:hover:not(:disabled) { background:#333; }
+.cmt-btn:hover:not(:disabled) { background:var(--gb-dark); }
 
-.loading { font-family:'Press Start 2P',monospace; font-size:12px; text-align:center; padding:80px 0; color:#ccc; }
+.loading { font-family:var(--font-pixel); font-size:12px; text-align:center; padding:80px 0; color:var(--gb-dark); }
 </style>

@@ -49,23 +49,23 @@ const handleLogout = () => { userStore.logout(); router.push('/login') }
 </script>
 
 <style scoped>
-.page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#fff; position:relative; }
-.pixel-bg { position:fixed; inset:0; pointer-events:none; z-index:0; background-image:radial-gradient(circle,#ddd 1px,transparent 1px); background-size:8px 8px; }
-.card { position:relative; z-index:1; width:100%; max-width:400px; background:#fff; border:3px solid #111; padding:32px 28px; text-align:center; }
-.profile { display:flex; align-items:center; gap:14px; text-align:left; margin-bottom:24px; padding-bottom:20px; border-bottom:2px solid #eee; }
-.avatar { width:56px; height:56px; border:3px solid #111; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.avatar-icon { font-size:28px; }
-.username { font-family:'Press Start 2P',monospace; font-size:11px; color:#111; margin:0 0 4px; }
-.desc { font-family:'Courier New',monospace; font-size:12px; color:#999; margin:0; }
+.page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--gb-lightest); position:relative; }
+.card { position:relative; z-index:1; width:100%; max-width:400px; background:var(--gb-light); border:3px solid var(--gb-darkest); box-shadow:6px 6px 0 var(--gb-dark); padding:32px 28px; text-align:center; }
+.profile { display:flex; align-items:center; gap:14px; text-align:left; margin-bottom:24px; padding-bottom:20px; border-bottom:2px solid var(--gb-darkest); }
+.avatar { width:56px; height:56px; border:3px solid var(--gb-darkest); background:var(--gb-lightest); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.avatar-icon { font-size:28px; color:var(--gb-darkest); }
+.username { font-family:var(--font-pixel); font-size:11px; color:var(--gb-darkest); margin:0 0 4px; }
+.desc { font-family:var(--font-body); font-size:12px; color:var(--gb-dark); margin:0; }
 .actions { display:flex; gap:10px; margin-bottom:16px; }
-.btn { flex:1; padding:14px 0; background:#111; border:3px solid #111; color:#fff; font-family:'Press Start 2P',monospace; font-size:9px; cursor:pointer; transition:all .08s; letter-spacing:1px; }
-.btn:hover { background:#333; }
-.btn.secondary { background:#fff; color:#111; }
-.menu-item { display:flex; justify-content:space-between; width:100%; padding:14px 0; background:none; border:none; border-bottom:2px solid #eee; font-family:'Courier New',monospace; font-size:14px; cursor:pointer; text-align:left; color:#111; transition:all .08s; }
-.menu-item:hover { background:#f5f5f5; padding-left:8px; }
-.menu-item.danger { color:#DC2626; }
-.arrow { font-size:10px; color:#ccc; }
-.back { margin-top:20px; font-family:'Courier New',monospace; font-size:12px; }
-.back a { color:#999; text-decoration:none; }
-.back a:hover { color:#111; }
+.btn { flex:1; padding:14px 0; background:var(--gb-darkest); border:3px solid var(--gb-darkest); color:var(--gb-lightest); font-family:var(--font-pixel); font-size:9px; cursor:pointer; transition:all .08s steps(2); letter-spacing:1px; }
+.btn:hover { background:var(--gb-dark); }
+.btn.secondary { background:var(--gb-lightest); color:var(--gb-darkest); }
+.btn.secondary:hover { background:var(--gb-light); }
+.menu-item { display:flex; justify-content:space-between; width:100%; padding:14px 0; background:none; border:none; border-bottom:2px solid var(--gb-dark); font-family:var(--font-zh); font-size:14px; cursor:pointer; text-align:left; color:var(--gb-darkest); transition:all .08s steps(2); }
+.menu-item:hover { background:var(--gb-lightest); padding-left:8px; }
+.menu-item.danger { color:var(--gb-darkest); font-weight:bold; }
+.arrow { font-size:10px; color:var(--gb-dark); }
+.back { margin-top:20px; font-family:var(--font-body); font-size:12px; }
+.back a { color:var(--gb-dark); text-decoration:none; }
+.back a:hover { color:var(--gb-darkest); }
 </style>

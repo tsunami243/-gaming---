@@ -9,6 +9,15 @@ spring:
     redis:
       port: 6379
       host: localhost
+      connect-timeout: 3s
+      timeout: 5s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 2s
+        shutdown-timeout: 1s
 # JWT 配置
 jwt:
   secret-key: ${JWT_SECRET_KEY:tsunami1234567890abcdefghijklmnopqrstuvwxyz}

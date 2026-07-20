@@ -10,7 +10,7 @@
         <div
           v-for="msg in messageList"
           :key="msg.id"
-          class="message-card apple-card"
+          class="message-card"
           :class="{ unread: !msg.isRead }"
           @click="handleClick(msg)"
         >
@@ -68,14 +68,14 @@ const messageList = ref([
 ])
 
 const typeMap = {
-  like: { icon: Heart, color: '#FF2D55' },
-  comment: { icon: Chatbubbles, color: '#007AFF' },
-  system: { icon: Flash, color: '#FF9500' },
-  activity: { icon: Medal, color: '#AF52DE' }
+  like: { icon: Heart, color: '#0F380F' },
+  comment: { icon: Chatbubbles, color: '#306230' },
+  system: { icon: Flash, color: '#5A8A0F' },
+  activity: { icon: Medal, color: '#8BAC0F' }
 }
 
 const getTypeIcon = (type) => typeMap[type]?.icon || Flash
-const getTypeColor = (type) => typeMap[type]?.color || '#007AFF'
+const getTypeColor = (type) => typeMap[type]?.color || '#306230'
 
 const formatTime = (time) => {
   if (!time) return ''
@@ -96,7 +96,7 @@ const handleClick = (msg) => {
 <style scoped>
 .message-view {
   min-height: 100vh;
-  background-color: var(--apple-bg);
+  background-color: var(--gb-lightest);
   padding-bottom: 80px;
 }
 
@@ -115,14 +115,16 @@ const handleClick = (msg) => {
 }
 
 .list-title {
+  font-family: var(--font-zh);
   font-size: 20px;
-  font-weight: 600;
-  color: var(--apple-text-primary);
+  color: var(--gb-darkest);
+  letter-spacing: 2px;
 }
 
 .list-count {
+  font-family: var(--font-body);
   font-size: 13px;
-  color: var(--apple-text-tertiary);
+  color: var(--gb-dark);
 }
 
 .message-list {
@@ -137,17 +139,26 @@ const handleClick = (msg) => {
   padding: 16px;
   cursor: pointer;
   position: relative;
+  background: var(--gb-light);
+  border: 3px solid var(--gb-darkest);
+  box-shadow: 4px 4px 0 var(--gb-dark);
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
+}
+
+.message-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--gb-darkest);
 }
 
 .message-card.unread {
-  border-left: 3px solid var(--apple-blue);
+  border-left: 6px solid var(--gb-darkest);
 }
 
 .message-icon {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border: 2px solid var(--gb-darkest);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,15 +170,16 @@ const handleClick = (msg) => {
 }
 
 .message-title {
+  font-family: var(--font-zh);
   font-size: 15px;
-  font-weight: 600;
-  color: var(--apple-text-primary);
+  color: var(--gb-darkest);
   margin-bottom: 4px;
 }
 
 .message-desc {
+  font-family: var(--font-body);
   font-size: 13px;
-  color: var(--apple-text-tertiary);
+  color: var(--gb-dark);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -175,8 +187,9 @@ const handleClick = (msg) => {
 }
 
 .message-time {
+  font-family: var(--font-body);
   font-size: 11px;
-  color: var(--apple-text-tertiary);
+  color: var(--gb-dark);
   margin-top: 6px;
 }
 
@@ -186,8 +199,7 @@ const handleClick = (msg) => {
   right: 16px;
   width: 8px;
   height: 8px;
-  background: var(--apple-blue);
-  border-radius: 50%;
+  background: var(--gb-darkest);
 }
 
 .no-message {

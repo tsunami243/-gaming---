@@ -1,5 +1,7 @@
 package org.example.bigevent.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.catalina.connector.Request;
 import org.example.bigevent.utils.JwtUtil;
 import org.example.bigevent.pojo.Result;
 import org.example.bigevent.pojo.User;
@@ -123,5 +125,14 @@ public class UserController {
         userService.updatePwd(newPwd);
         return Result.success();
 
+    }
+    //新增用户登录刷新token接口
+    @PostMapping("/refresh")
+    public Result refresh(){
+        Map<String, Object> userMap = ThreadLocalUtil.get();
+        String userId = userMap.get("userId").toString();
+        String RefreshToken = jwtUtil.genToken(userMap,DEFAULT_EXPIRATION);
+        stringRedisTemplate.opsForValue().set("token"+userId,RefreshToken,REMEMBER_ME_EXPIRATION/1000, TimeUnit.SECONDS);
+        return Result.success(RefreshToken);
     }
 }

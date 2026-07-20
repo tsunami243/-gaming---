@@ -25,4 +25,6 @@ public interface ArticleService {
     Map<String, Object> getArticleStats(Integer articleId);
 
     Integer calculateHeat(Integer articleId);
+
+    PageBean<Article> search(Integer pageNum, Integer pageSize, String tag);
 }

@@ -40,6 +40,21 @@
               <span class="menu-icon">▸</span> 退出
             </button>
           </template>
+
+          <!-- 移动端分类（桌面端由侧栏承担） -->
+          <div class="menu-cats">
+            <div class="menu-cats-title">SELECT</div>
+            <button
+              v-for="tab in tabs"
+              :key="'m' + (tab.id ?? 'all')"
+              class="menu-item"
+              :class="{ 'cat-active': currentCategoryId === tab.id }"
+              @click="selectCategory(tab.id); menuOpen = false"
+            >
+              <span class="cat-dot" :style="{ background: tab.dotColor }"></span>
+              {{ tab.name }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -114,10 +129,10 @@ const currentCategoryId = ref(null)
 const total = ref(0)
 const menuOpen = ref(false)
 
-const CAT_COLORS = ['#4ADE80','#DC2626','#F97316','#EF4444','#3B82F6','#A855F7','#EC4899','#14B8A6']
+const CAT_COLORS = ['#0F380F', '#306230', '#8BAC0F', '#5A8A0F', '#1F4A1F', '#6B9A0F']
 
 const tabs = computed(() => {
-  const all = [{ id: null, name: 'ALL', dotColor: '#111' }]
+  const all = [{ id: null, name: 'ALL', dotColor: '#0F380F' }]
   const cats = categoryStore.items.map((c, i) => ({
     id: c.id, name: c.categoryName,
     dotColor: CAT_COLORS[i % CAT_COLORS.length]
@@ -139,25 +154,16 @@ onMounted(async () => { await categoryStore.fetchCategories() })
 
 <style scoped>
 /* ============================================================
-   GAMEBOI ARCADE — 白底像素 + 左分类 + 汉堡菜单
+   GAMEBOI ARCADE — GameBoy 绿 全屏街机布局
    ============================================================ */
 
 .arcade-cabinet {
-  min-height: 100vh;
-  background: #fff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gb-lightest);
   position: relative;
-  overflow-x: hidden;
-}
-
-/* ---- 像素背景网格 ---- */
-.pixel-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle, #ddd 1px, transparent 1px);
-  background-size: 8px 8px;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -165,125 +171,138 @@ onMounted(async () => { await categoryStore.fetchCategories() })
    ============================================================ */
 
 .top-bar {
-  position: sticky;
-  top: 0;
+  position: relative;
+  flex-shrink: 0;
+  height: 64px;
   z-index: 30;
-  background: #fff;
-  border-bottom: 3px solid #111;
+  background: var(--gb-darkest);
+  border-bottom: 3px solid var(--gb-dark);
 }
 
 .hamburger {
   position: absolute;
-  left: 14px;
-  top: 14px;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 40;
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding: 8px 7px;
-  background: #111;
-  border: 2px solid #111;
+  background: var(--gb-light);
+  border: 2px solid var(--gb-lightest);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.1s steps(2);
 }
-.hamburger:hover { background: #333; }
-.ham-line { width: 20px; height: 3px; background: #fff; }
+.hamburger:hover { background: var(--gb-lightest); }
+.ham-line { width: 20px; height: 3px; background: var(--gb-darkest); }
 
 /* ---- 滑出菜单 ---- */
 .slide-menu {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0,0,0,0.3);
+  background: rgba(15, 56, 15, 0.4);
 }
 .menu-panel {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 220px;
-  background: #fff;
-  border-right: 3px solid #111;
+  width: 240px;
+  background: var(--gb-lightest);
+  border-right: 3px solid var(--gb-darkest);
   padding: 20px 16px;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  box-shadow: 4px 0 0 var(--gb-dark);
+  overflow-y: auto;
 }
 .menu-header {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #111;
+  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--gb-darkest);
 }
-.menu-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #111; }
+.menu-title { font-family: var(--font-pixel); font-size: 11px; color: var(--gb-darkest); }
 .menu-close {
-  font-size: 18px; background: none; border: 2px solid #111; cursor: pointer;
+  font-size: 18px; background: none; border: 2px solid var(--gb-darkest); cursor: pointer;
   width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  color: var(--gb-darkest);
 }
+.menu-close:hover { background: var(--gb-light); }
 .menu-item {
   display: flex; align-items: center; gap: 10px;
   width: 100%; padding: 12px 10px; margin-bottom: 6px;
-  background: none; border: 2px solid #ddd;
-  font-family: 'Courier New', monospace; font-size: 14px;
-  cursor: pointer; transition: all 0.1s;
+  background: none; border: 2px solid var(--gb-dark);
+  font-family: var(--font-zh); font-size: 14px;
+  color: var(--gb-darkest);
+  cursor: pointer; transition: all 0.1s steps(2);
 }
-.menu-item:hover { border-color: #111; background: #f5f5f5; }
+.menu-item:hover { border-color: var(--gb-darkest); background: var(--gb-light); }
+.menu-item.cat-active { background: var(--gb-darkest); color: var(--gb-lightest); }
 .menu-icon { font-size: 10px; }
+
+/* 移动端分类区：桌面端隐藏 */
+.menu-cats { display: none; }
+.menu-cats-title {
+  font-family: var(--font-pixel); font-size: 8px; color: var(--gb-dark);
+  letter-spacing: 2px; margin: 18px 0 8px; padding-top: 14px;
+  border-top: 2px solid var(--gb-dark);
+}
 
 /* ---- Marqee ---- */
 .marquee {
-  background: #111;
-  padding: 10px 20px 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 20px 4px 64px; /* 左侧给汉堡让位 */
   text-align: center;
-  margin-left: 52px; /* 给汉堡让位 */
 }
 .marquee-title {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: clamp(9px, 2vw, 14px);
-  color: #fff;
+  color: var(--gb-lightest);
   letter-spacing: 3px;
-  margin: 6px 0;
-  text-shadow: 0 0 8px rgba(255,255,255,0.4);
+  margin: 4px 0;
+  text-shadow: 0 0 8px rgba(155, 188, 15, 0.5);
 }
 .marquee-bulbs {
   display: flex; justify-content: center; gap: 10px;
 }
 .bulb {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #FDE047; box-shadow: 0 0 5px 2px rgba(253,224,71,0.5);
+  width: 6px; height: 6px;
+  background: var(--gb-dark);
   animation: bulbChase 1.5s ease-in-out infinite;
 }
 @keyframes bulbChase {
-  0%,100% { opacity: 0.3; background: #FDE047; }
-  50%     { opacity: 1;   background: #fff; box-shadow: 0 0 8px 3px rgba(255,255,255,0.7); }
+  0%,100% { opacity: 0.3; background: var(--gb-dark); }
+  50%     { opacity: 1;   background: var(--gb-lightest); box-shadow: 0 0 8px 3px rgba(155, 188, 15, 0.7); }
 }
 
 /* ============================================================
-   主体布局
+   主体布局：全屏 Grid
    ============================================================ */
 
 .main-layout {
-  display: flex;
-  max-width: 1100px;
-  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 160px 1fr;
   position: relative;
   z-index: 1;
 }
 
 /* === 左侧分类栏 === */
 .sidebar {
-  width: 130px;
-  flex-shrink: 0;
-  border-right: 3px solid #111;
-  background: #fafafa;
+  border-right: 3px solid var(--gb-darkest);
+  background: var(--gb-light);
   padding: 0 0 40px;
-  min-height: calc(100vh - 110px);
-  position: sticky;
-  top: 110px;
-  align-self: flex-start;
+  overflow-y: auto;
 }
 
 .sidebar-title {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 8px;
-  color: #999;
-  padding: 14px 8px 10px;
+  color: var(--gb-darkest);
+  padding: 14px 10px 10px;
   letter-spacing: 2px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid var(--gb-darkest);
 }
 
 .cat-item {
@@ -291,32 +310,35 @@ onMounted(async () => { await categoryStore.fetchCategories() })
   align-items: center;
   gap: 6px;
   width: 100%;
-  padding: 10px 8px;
+  padding: 12px 10px;
   background: none;
   border: none;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(15, 56, 15, 0.25);
   cursor: pointer;
-  font-family: 'ZCOOL KuaiLe', 'Courier New', monospace;
+  font-family: var(--font-zh);
   font-size: 13px;
-  font-weight: normal;
-  color: #555;
-  transition: all 0.08s;
+  color: var(--gb-darkest);
+  transition: all 0.08s steps(2);
   text-align: left;
 }
 
 .cat-item:hover {
-  background: #f0f0f0;
-  color: #111;
+  background: var(--gb-lightest);
 }
 
 .cat-item.active {
-  background: #111;
-  color: #fff;
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
 }
 
 .cat-dot {
-  width: 8px; height: 8px; border-radius: 2px;
+  width: 8px; height: 8px;
   flex-shrink: 0;
+  border: 1px solid var(--gb-darkest);
+}
+
+.cat-item.active .cat-dot {
+  border-color: var(--gb-lightest);
 }
 
 .cat-name {
@@ -333,9 +355,8 @@ onMounted(async () => { await categoryStore.fetchCategories() })
 
 /* === 右侧内容 === */
 .content-area {
-  flex: 1;
   min-width: 0;
-  padding: 0;
+  overflow-y: auto;
 }
 
 .section-hd {
@@ -343,21 +364,36 @@ onMounted(async () => { await categoryStore.fetchCategories() })
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px 10px;
-  border-bottom: 2px solid #eee;
-  margin: 0 12px;
+  border-bottom: 2px solid var(--gb-dark);
+  margin: 0 16px;
 }
 
 .section-label {
-  font-family: 'ZCOOL KuaiLe', 'Press Start 2P', 'Courier New', monospace;
+  font-family: var(--font-zh);
   font-size: 20px;
-  font-weight: normal;
-  color: #111;
+  color: var(--gb-darkest);
   letter-spacing: 2px;
 }
 
 .section-count {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 11px;
-  color: #999;
+  color: var(--gb-dark);
+}
+
+/* ============================================================
+   响应式：移动端侧栏收进汉堡抽屉
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+  .menu-cats {
+    display: block;
+  }
 }
 </style>

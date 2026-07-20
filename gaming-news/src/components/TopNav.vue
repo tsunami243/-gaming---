@@ -27,8 +27,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 50;
-  background: #111;
-  border-bottom: 2px solid #fff;
+  background: var(--gb-darkest);
+  border-bottom: 2px solid var(--gb-dark);
   transform: translateY(0);
   transition: transform 0.2s;
 }
@@ -40,16 +40,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 
 .logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.logo-symbol { font-size: 16px; color: #FBBF24; }
-.logo-text { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #fff; letter-spacing: 2px; }
+.logo-symbol { font-size: 16px; color: var(--gb-lightest); }
+.logo-text { font-family: var(--font-pixel); font-size: 10px; color: var(--gb-lightest); letter-spacing: 2px; }
 
 .nav-actions { display: flex; gap: 6px; }
 .nav-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 7px;
-  padding: 6px 10px; background: #222; border: 2px solid #fff; color: #fff; cursor: pointer;
-  transition: all 0.1s;
+  font-family: var(--font-pixel); font-size: 7px;
+  padding: 6px 10px; background: var(--gb-dark); border: 2px solid var(--gb-lightest); color: var(--gb-lightest); cursor: pointer;
+  transition: all 0.1s steps(2);
 }
-.nav-btn:hover { background: #333; }
+.nav-btn:hover { background: var(--gb-light); color: var(--gb-darkest); }
 .nav-btn:active { transform: translateY(1px); }
-.nav-btn.secondary { border-color: #555; color: #aaa; padding: 6px 8px; font-size: 12px; }
+.nav-btn.secondary { border-color: var(--gb-dark); color: var(--gb-light); padding: 6px 8px; font-size: 12px; }
 </style>

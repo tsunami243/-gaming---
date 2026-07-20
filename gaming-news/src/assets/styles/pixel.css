@@ -1,0 +1,138 @@
+/* ============================================================
+   GameBoi — GameBoy LCD 四色绿 全局像素主题
+   全站唯一色板与像素工具类
+   ============================================================ */
+
+:root {
+  /* GameBoy LCD 四色绿 */
+  --gb-darkest:  #0F380F;
+  --gb-dark:     #306230;
+  --gb-light:    #8BAC0F;
+  --gb-lightest: #9BBC0F;
+
+  /* 语义化别名 */
+  --px-text:      var(--gb-darkest);
+  --px-text-dim:  var(--gb-dark);
+  --px-bg:        var(--gb-lightest);
+  --px-bg-panel:  var(--gb-light);
+  --px-border:    var(--gb-darkest);
+
+  /* 像素字体栈 */
+  --font-pixel:  'Press Start 2P', 'Courier New', monospace;
+  --font-zh:     'ZCOOL KuaiLe', 'Courier New', monospace;
+  --font-body:   'Courier New', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--gb-lightest);
+  color: var(--gb-darkest);
+  -webkit-font-smoothing: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  border: none;
+  outline: none;
+  background: none;
+  cursor: pointer;
+}
+
+input, textarea {
+  outline: none;
+  border: none;
+}
+
+/* ---- 像素点阵背景（fixed 浮层，各页面直接放 <div class="pixel-bg">） ---- */
+.pixel-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(15, 56, 15, 0.18) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+/* ---- 像素边框工具类 ---- */
+.px-border {
+  border: 3px solid var(--gb-darkest);
+}
+
+.px-shadow {
+  box-shadow: 4px 4px 0 var(--gb-dark);
+}
+
+/* ---- 像素按钮 ---- */
+.px-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--gb-light);
+  border: 3px solid var(--gb-darkest);
+  box-shadow: 4px 4px 0 var(--gb-dark);
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--gb-darkest);
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
+}
+
+.px-btn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 3px 3px 0 var(--gb-dark);
+}
+
+.px-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--gb-dark);
+}
+
+/* ---- 像素面板 ---- */
+.px-panel {
+  background: var(--gb-light);
+  border: 3px solid var(--gb-darkest);
+  box-shadow: 4px 4px 0 var(--gb-dark);
+}
+
+/* ---- 像素化图片渲染 ---- */
+.px-img {
+  image-rendering: pixelated;
+}
+
+/* ---- 滚动条 ---- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gb-lightest);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gb-dark);
+  border: 2px solid var(--gb-lightest);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gb-darkest);
+}

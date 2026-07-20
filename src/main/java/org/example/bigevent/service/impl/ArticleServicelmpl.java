@@ -69,6 +69,23 @@ public class ArticleServicelmpl implements ArticleService {
     }
 
     @Override
+    public PageBean<Article> search(Integer pageNum, Integer pageSize, String tag) {
+        PageBean<Article> pageBean = new PageBean<>();
+
+        PageHelper.startPage(pageNum, pageSize);
+        List<Article> list = articleMapper.searchByTag(tag);
+        if (list instanceof Page) {
+            Page<Article> page = (Page<Article>) list;
+            pageBean.setTotal(page.getTotal());
+            pageBean.setItems(page.getResult());
+        } else {
+            pageBean.setTotal((long) list.size());
+            pageBean.setItems(list);
+        }
+        return pageBean;
+    }
+
+    @Override
     public void update(Article article) {
         Map<String,Object> map = ThreadLocalUtil.get();
         Integer userId = (Integer) map.get("userId");
@@ -142,4 +159,6 @@ public class ArticleServicelmpl implements ArticleService {
         int heat = views * 1 + uniqueViews * 3 + favorites * 5 + likeCount * 2 + commentCount * 3;
         return heat;
     }
+
+
 }

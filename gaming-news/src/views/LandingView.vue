@@ -1,78 +1,102 @@
 <template>
-  <div class="landing-view">
-    <!-- Matrix 像素文字雨 -->
-    <div class="matrix-rain">
-      <div
-        v-for="col in rainColumns"
-        :key="col.id"
-        class="rain-column"
-        :style="col.style"
-      >
-        <span
-          v-for="(ch, j) in col.chars"
-          :key="j"
-          class="rain-char"
-          :style="{ animationDelay: (j * col.charDelay) + 's', opacity: 0.15 + (j / col.chars.length) * 0.25 }"
-        >{{ ch }}</span>
-      </div>
-    </div>
-    <!-- LCD 扫描线叠加层 -->
-    <div class="scanlines"></div>
-    <!-- 像素网格纹理 -->
-    <div class="pixel-grid"></div>
-    <!-- LCD 屏幕边框 -->
-    <div class="screen-bezel"></div>
-
-    <div class="content">
-      <!-- GameBoi Logo — 模拟 GameBoy 开机动画 -->
-      <div class="logo-block">
-        <h1 class="brand-name">
+  <div class="landing-view" ref="rootRef">
+    <!-- CRT 屏幕整体（退场时整体压缩） -->
+    <div class="crt-screen" ref="crtRef">
+      <!-- Matrix 像素文字雨 -->
+      <div class="matrix-rain">
+        <div
+          v-for="col in rainColumns"
+          :key="col.id"
+          class="rain-column"
+          :style="col.style"
+        >
           <span
-            v-for="(char, i) in brandChars"
-            :key="i"
-            class="brand-char"
-            :style="{ animationDelay: (0.6 + i * 0.08) + 's' }"
-          >{{ char }}</span>
-        </h1>
-        <div class="brand-line"></div>
-        <p class="brand-sub">游戏资讯平台</p>
-      </div>
-
-      <!-- 开机副标题 -->
-      <div class="boot-info">
-        <p class="boot-text">
-          <span class="blink-cursor">■</span> 专注游戏资讯 · 第一时间送达
-        </p>
-        <p class="boot-version">v1.0 · 2026</p>
-      </div>
-
-      <!-- START 按钮 -->
-      <button class="start-btn" @click="handleEnter">
-        <span class="btn-frame">
-          <span class="btn-text">▶ &nbsp;START</span>
-        </span>
-        <span class="btn-shadow"></span>
-      </button>
-
-      <!-- 底部装饰：GameBoy 按键图标 -->
-      <div class="dpad-hint">
-        <div class="dpad">
-          <span class="dpad-v"></span>
-          <span class="dpad-h"></span>
+            v-for="(ch, j) in col.chars"
+            :key="j"
+            class="rain-char"
+            :style="{ animationDelay: (j * col.charDelay) + 's', opacity: 0.15 + (j / col.chars.length) * 0.25 }"
+          >{{ ch }}</span>
         </div>
-        <span class="dpad-label">PRESS ENTER</span>
+      </div>
+      <!-- LCD 扫描线叠加层 -->
+      <div class="scanlines"></div>
+      <!-- 像素网格纹理 -->
+      <div class="pixel-grid"></div>
+      <!-- 开机扫描亮线 -->
+      <div class="power-sweep" ref="sweepRef"></div>
+      <!-- LCD 屏幕边框 -->
+      <div class="screen-bezel"></div>
+
+      <div class="content" ref="contentRef">
+        <!-- GameBoi Logo — 模拟 GameBoy 开机动画 -->
+        <div class="logo-block">
+          <h1 class="brand-name">
+            <span
+              v-for="(char, i) in brandChars"
+              :key="i"
+              class="brand-char"
+            >{{ char }}</span>
+          </h1>
+          <div class="brand-line" ref="lineRef"></div>
+          <p class="brand-sub">
+            <span
+              v-for="(char, i) in subChars"
+              :key="i"
+              class="brand-sub-char"
+            >{{ char }}</span>
+          </p>
+        </div>
+
+        <!-- 开机副标题 -->
+        <div class="boot-info" ref="bootRef">
+          <p class="boot-text">
+            <span class="blink-cursor">■</span> 专注游戏资讯 · 第一时间送达
+          </p>
+          <p class="boot-version">v1.0 · 2026</p>
+        </div>
+
+        <!-- START 按钮 -->
+        <button class="start-btn" ref="btnRef" @click="handleEnter">
+          <span class="btn-frame">
+            <span class="btn-text">▶ &nbsp;START</span>
+          </span>
+        </button>
+
+        <!-- 底部装饰：GameBoy 按键图标 -->
+        <div class="dpad-hint" ref="dpadRef">
+          <div class="dpad">
+            <span class="dpad-v"></span>
+            <span class="dpad-h"></span>
+          </div>
+          <span class="dpad-label">PRESS ENTER</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import gsap from 'gsap'
 
 const router = useRouter()
 const brandChars = 'GAMEBOI'.split('')
+const subChars = '游戏资讯平台'.split('')
 const rainColumns = ref([])
+
+const rootRef = ref(null)
+const crtRef = ref(null)
+const contentRef = ref(null)
+const sweepRef = ref(null)
+const lineRef = ref(null)
+const bootRef = ref(null)
+const btnRef = ref(null)
+const dpadRef = ref(null)
+
+let bootTl = null
+let pulseTween = null
+let exiting = false
 
 // Matrix 像素文字雨 — 游戏符号 + 片假名 + 像素块
 const RAIN_CHARS = [
@@ -92,18 +116,16 @@ const initRain = () => {
   const colCount = 45
   for (let i = 0; i < colCount; i++) {
     const r = seededRandom(i + 42)
-    // 更长的字符链 (12–22个)，覆盖更多面积
     const charCount = 12 + Math.floor(r * 10)
     const chars = []
     for (let j = 0; j < charCount; j++) {
       chars.push(RAIN_CHARS[Math.floor(seededRandom(i * 100 + j) * RAIN_CHARS.length)])
     }
-    // 均匀分布全宽，加一些随机偏移
     const baseLeft = (i / colCount) * 100
-    const jitter = (r - 0.5) * 6  // ±3%
+    const jitter = (r - 0.5) * 6
     const left = baseLeft + jitter
-    const duration = 6 + r * 10  // 6-16s，稍快一些增加密度
-    const delay = r * duration   // 用百分比偏移确保各列不同阶段
+    const duration = 6 + r * 10
+    const delay = r * duration
     cols.push({
       id: i,
       chars,
@@ -119,40 +141,136 @@ const initRain = () => {
   rainColumns.value = cols
 }
 
-onMounted(() => {
-  initRain()
-})
+const playBootSequence = () => {
+  const chars = contentRef.value.querySelectorAll('.brand-char')
+  const subCharsEls = contentRef.value.querySelectorAll('.brand-sub-char')
+
+  gsap.set([bootRef.value, btnRef.value, dpadRef.value], { opacity: 0 })
+  gsap.set(subCharsEls, { opacity: 0 })
+  gsap.set(lineRef.value, { scaleX: 0 })
+
+  bootTl = gsap.timeline({ defaults: { ease: 'power2.out' } })
+
+  // t=0.0 电源闪烁：LCD 点亮
+  bootTl.fromTo(crtRef.value,
+    { opacity: 0, filter: 'brightness(4)' },
+    { opacity: 1, filter: 'brightness(1)', duration: 0.45, ease: 'steps(5)' }
+  )
+
+  // t=0.15 开机扫描亮线从上往下扫过
+  bootTl.fromTo(sweepRef.value,
+    { top: '-4%', opacity: 1 },
+    { top: '104%', duration: 0.55, ease: 'power1.in' },
+    0.15
+  )
+  bootTl.set(sweepRef.value, { opacity: 0 })
+
+  // t=0.5 LOGO 字符弹性落下
+  bootTl.fromTo(chars,
+    { y: -90, opacity: 0, scaleY: 2.2 },
+    { y: 0, opacity: 1, scaleY: 1, duration: 0.7, stagger: 0.09, ease: 'elastic.out(1, 0.45)' },
+    0.5
+  )
+
+  // 字符落地时屏幕微震
+  bootTl.to(crtRef.value, {
+    x: 2, y: 1, duration: 0.05, repeat: 3, yoyo: true, ease: 'steps(1)'
+  }, 1.05)
+
+  // t=1.35 分割线展开
+  bootTl.to(lineRef.value, { scaleX: 1, duration: 0.4, ease: 'steps(8)' }, 1.35)
+
+  // t=1.6 副标题打字机
+  bootTl.to(subCharsEls, {
+    opacity: 1, duration: 0.01, stagger: 0.12, ease: 'steps(1)'
+  }, 1.6)
+
+  // t=1.9 boot-info 淡入
+  bootTl.to(bootRef.value, { opacity: 1, y: 0, duration: 0.4 }, 2.0)
+
+  // t=2.2 START 按钮弹入
+  bootTl.fromTo(btnRef.value,
+    { opacity: 0, scale: 0.6 },
+    { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2.5)' },
+    2.2
+  )
+
+  // START 呼吸脉冲（循环）
+  bootTl.call(() => {
+    pulseTween = gsap.to(btnRef.value, {
+      scale: 1.06, duration: 0.5, yoyo: true, repeat: -1, ease: 'steps(2)'
+    })
+  })
+
+  // t=2.5 十字键滑入
+  bootTl.fromTo(dpadRef.value,
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.4, ease: 'steps(4)' },
+    2.5
+  )
+}
 
 const handleEnter = () => {
-  router.push('/home')
+  if (exiting) return
+  exiting = true
+  window.removeEventListener('keydown', onKeydown)
+  if (pulseTween) pulseTween.kill()
+  if (bootTl) bootTl.kill()
+
+  // CRT 关机：内容压成水平亮线 → 亮线横向收缩 → 黑屏
+  rootRef.value.style.backgroundColor = '#000'
+  const exitTl = gsap.timeline({
+    onComplete: () => router.push('/home')
+  })
+  exitTl
+    .to(crtRef.value, { scaleY: 0.008, duration: 0.3, ease: 'power3.in' })
+    .to(crtRef.value, { scaleX: 0, duration: 0.22, ease: 'power3.in' })
+    .to(crtRef.value, { opacity: 0, duration: 0.1 })
 }
+
+const onKeydown = (e) => {
+  if (e.key === 'Enter') handleEnter()
+}
+
+onMounted(() => {
+  initRain()
+  playBootSequence()
+  window.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  if (pulseTween) pulseTween.kill()
+  if (bootTl) bootTl.kill()
+  gsap.killTweensOf('*')
+})
 </script>
 
 <style scoped>
 /* ============================================================
-   GameBoi Landing — GameBoy LCD Screen Aesthetic
+   GameBoi Landing — GameBoy LCD Screen Aesthetic (GSAP)
    ============================================================ */
-
-/* ---- GameBoy LCD 绿 色板 ---- */
-:root {
-  --gb-bg:       #9BBC0F;
-  --gb-bg-dark:  #8BAC0F;
-  --gb-text:     #0F380F;
-  --gb-text-dim: #306230;
-  --gb-accent:   #306230;
-  --gb-border:   #0F380F;
-}
 
 .landing-view {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--gb-bg);
+  background-color: var(--gb-lightest);
   position: relative;
   overflow: hidden;
   cursor: default;
   user-select: none;
+}
+
+.crt-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gb-lightest);
+  will-change: transform;
 }
 
 /* ---- LCD 扫描线 ---- */
@@ -182,11 +300,31 @@ const handleEnter = () => {
   background-size: 6px 6px;
 }
 
+/* ---- 开机扫描亮线 ---- */
+.power-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -4%;
+  height: 3%;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(15, 56, 15, 0.25),
+    rgba(155, 188, 15, 0.9),
+    rgba(15, 56, 15, 0.25),
+    transparent
+  );
+}
+
 /* ---- 屏幕边框（模拟掌机屏幕内框） ---- */
 .screen-bezel {
   position: absolute;
   inset: 12px;
-  border: 3px solid var(--gb-border);
+  border: 3px solid var(--gb-darkest);
   border-radius: 1px;
   pointer-events: none;
   z-index: 3;
@@ -200,19 +338,10 @@ const handleEnter = () => {
   text-align: center;
   padding: 20px;
   max-width: 520px;
-  animation: lcdPowerOn 0.35s ease-out;
-}
-
-/* LCD 开机闪烁 */
-@keyframes lcdPowerOn {
-  0%   { opacity: 0; filter: brightness(3); }
-  20%  { opacity: 0.6; filter: brightness(2); }
-  60%  { opacity: 0.9; filter: brightness(0.8); }
-  100% { opacity: 1; filter: brightness(1); }
 }
 
 /* ============================================================
-   LOGO — Nintendo 风格下落动画
+   LOGO
    ============================================================ */
 
 .logo-block {
@@ -228,50 +357,39 @@ const handleEnter = () => {
 
 .brand-char {
   display: inline-block;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-family: var(--font-pixel);
   font-size: clamp(28px, 6vw, 52px);
   font-weight: 400;
-  color: var(--gb-text);
+  color: var(--gb-darkest);
   letter-spacing: 2px;
   text-shadow:
-    2px 2px 0 var(--gb-text-dim),
-    -1px -1px 0 var(--gb-bg);
+    2px 2px 0 var(--gb-dark),
+    -1px -1px 0 var(--gb-lightest);
   opacity: 0;
-  animation: charDrop 0.35s ease-out forwards;
-}
-
-/* 字符从天而降 */
-@keyframes charDrop {
-  0%   { opacity: 0; transform: translateY(-80px) scaleY(2); }
-  60%  { opacity: 1; transform: translateY(4px) scaleY(0.9); }
-  80%  { transform: translateY(-2px) scaleY(1.05); }
-  100% { opacity: 1; transform: translateY(0) scaleY(1); }
+  will-change: transform;
 }
 
 /* 品牌分割线 */
 .brand-line {
-  width: 0;
+  width: 140px;
   height: 4px;
-  background: var(--gb-text);
+  background: var(--gb-darkest);
   margin: 6px auto 14px;
-  animation: lineExpand 0.5s 1s ease-out forwards;
-  box-shadow: 0 1px 0 var(--gb-text-dim);
-}
-
-@keyframes lineExpand {
-  0%   { width: 0; }
-  100% { width: 140px; }
+  transform-origin: center;
+  box-shadow: 0 1px 0 var(--gb-dark);
 }
 
 /* 品牌副标题 */
 .brand-sub {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: bold;
-  color: var(--gb-text-dim);
+  color: var(--gb-dark);
   letter-spacing: 6px;
-  opacity: 0;
-  animation: fadeIn 0.6s 1.3s ease-out forwards;
+}
+
+.brand-sub-char {
+  display: inline-block;
 }
 
 /* ============================================================
@@ -280,14 +398,12 @@ const handleEnter = () => {
 
 .boot-info {
   margin-bottom: 40px;
-  opacity: 0;
-  animation: fadeIn 0.6s 1.5s ease-out forwards;
 }
 
 .boot-text {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 13px;
-  color: var(--gb-text);
+  color: var(--gb-darkest);
   letter-spacing: 1px;
   margin: 0 0 6px;
 }
@@ -295,7 +411,7 @@ const handleEnter = () => {
 .blink-cursor {
   display: inline-block;
   animation: blink 1s step-end infinite;
-  color: var(--gb-text);
+  color: var(--gb-darkest);
 }
 
 @keyframes blink {
@@ -304,9 +420,9 @@ const handleEnter = () => {
 }
 
 .boot-version {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 10px;
-  color: var(--gb-text-dim);
+  color: var(--gb-dark);
   letter-spacing: 2px;
 }
 
@@ -321,40 +437,43 @@ const handleEnter = () => {
   border: none;
   cursor: pointer;
   padding: 0;
-  opacity: 0;
-  animation: fadeIn 0.6s 2s ease-out forwards;
-  transition: transform 0.1s ease;
-}
-
-.start-btn:hover {
-  transform: translate(1px, 1px);
-}
-
-.start-btn:active {
-  transform: translate(3px, 3px);
+  will-change: transform;
 }
 
 .btn-frame {
   display: inline-block;
   padding: 14px 36px;
-  background: var(--gb-bg-dark);
-  border: 3px solid var(--gb-text);
+  background: var(--gb-light);
+  border: 3px solid var(--gb-darkest);
   position: relative;
   box-shadow:
-    4px 4px 0 var(--gb-text-dim),
+    4px 4px 0 var(--gb-dark),
+    inset -2px -2px 0 rgba(15, 56, 15, 0.15),
+    inset 2px 2px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
+}
+
+.start-btn:hover .btn-frame {
+  transform: translate(1px, 1px);
+  box-shadow:
+    3px 3px 0 var(--gb-dark),
+    inset -2px -2px 0 rgba(15, 56, 15, 0.15),
+    inset 2px 2px 0 rgba(255, 255, 255, 0.08);
+}
+
+.start-btn:active .btn-frame {
+  transform: translate(4px, 4px);
+  box-shadow:
+    0 0 0 var(--gb-dark),
     inset -2px -2px 0 rgba(15, 56, 15, 0.15),
     inset 2px 2px 0 rgba(255, 255, 255, 0.08);
 }
 
 .btn-text {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-family: var(--font-pixel);
   font-size: 14px;
-  color: var(--gb-text);
+  color: var(--gb-darkest);
   letter-spacing: 2px;
-}
-
-.btn-shadow {
-  display: none;
 }
 
 /* ---- D-Pad 装饰 ---- */
@@ -364,8 +483,6 @@ const handleEnter = () => {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  opacity: 0;
-  animation: fadeIn 0.6s 2.5s ease-out forwards;
 }
 
 .dpad {
@@ -380,7 +497,7 @@ const handleEnter = () => {
   top: 0;
   width: 16px;
   height: 40px;
-  background: var(--gb-text);
+  background: var(--gb-darkest);
   opacity: 0.2;
 }
 
@@ -390,24 +507,15 @@ const handleEnter = () => {
   top: 12px;
   width: 40px;
   height: 16px;
-  background: var(--gb-text);
+  background: var(--gb-darkest);
   opacity: 0.2;
 }
 
 .dpad-label {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
   font-size: 9px;
-  color: var(--gb-text-dim);
+  color: var(--gb-dark);
   letter-spacing: 3px;
-}
-
-/* ============================================================
-   通用动画
-   ============================================================ */
-
-@keyframes fadeIn {
-  0%   { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================================
@@ -432,8 +540,8 @@ const handleEnter = () => {
 }
 
 .rain-char {
-  font-family: 'Courier New', monospace;
-  color: var(--gb-text-dim);
+  font-family: var(--font-body);
+  color: var(--gb-dark);
   line-height: 1.2;
   text-shadow: 0 0 3px rgba(48, 98, 48, 0.3);
   animation: charFlicker 3s ease-in-out infinite;

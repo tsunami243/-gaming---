@@ -33,6 +33,17 @@ public class ArticleController {
         PageBean<Article> articlePageBean = articleService.list(pageNum, pageSize, categoryId, state);
         return Result.success(articlePageBean);
     }
+
+    //新增按标签查询
+    @GetMapping("/search")
+    public Result<PageBean<Article>> search(
+            Integer pageNum,
+            Integer pageSize,
+            @RequestParam(required = false) String tag
+    ){
+        PageBean<Article> articlePageBean = articleService.search(pageNum, pageSize, tag);
+        return Result.success(articlePageBean);
+    }
     //更新文章
     @PutMapping
     public Result update(@RequestBody @Validated Article article){

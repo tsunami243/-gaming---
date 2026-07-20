@@ -54,8 +54,8 @@ const handleClick = (tab) => {
   align-items: center;
   height: 60px;
   padding-bottom: env(safe-area-inset-bottom);
-  background: var(--gb-bg, #9BBC0F);
-  border-top: 3px solid var(--gb-text, #0F380F);
+  background: var(--gb-lightest);
+  border-top: 3px solid var(--gb-darkest);
 }
 
 .nav-item {
@@ -67,17 +67,17 @@ const handleClick = (tab) => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gb-text-dim, #306230);
-  transition: all 0.06s ease;
-  font-family: 'Courier New', monospace;
+  color: var(--gb-dark);
+  transition: all 0.06s steps(2);
+  font-family: var(--font-body);
 }
 
 .nav-item:hover {
-  color: var(--gb-text, #0F380F);
+  color: var(--gb-darkest);
 }
 
 .nav-item.active {
-  color: var(--gb-text, #0F380F);
+  color: var(--gb-darkest);
 }
 
 .nav-item.active .nav-icon {
@@ -107,13 +107,13 @@ const handleClick = (tab) => {
 
 .nav-item.is-primary .nav-icon {
   font-size: 24px;
-  background: var(--gb-bg-dark, #8BAC0F);
-  border: 2px solid var(--gb-text, #0F380F);
+  background: var(--gb-light);
+  border: 2px solid var(--gb-darkest);
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 3px 3px 0 rgba(15, 56, 15, 0.2);
+  box-shadow: 3px 3px 0 var(--gb-dark);
 }
 </style>
