@@ -17,6 +17,7 @@
                 and create_user=#{userId}
             </if>
         </where>
+        order by create_time desc
     </select>
 
     <!--根据标签查询文章列表-->

@@ -37,6 +37,10 @@ __pycache__/
 *.pyc
 ingest/.env
 
+### Test/Performance ###
+*.jmx
+*.jtl
+
 ### Node ###
 gaming-news/node_modules/
 gaming-news/dist/
