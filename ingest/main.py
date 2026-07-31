@@ -111,10 +111,9 @@ async def run_sources_concurrently(spiders, agent, oss, producer, redis, dry_run
 @click.option("--stats", "show_stats", is_flag=True, help="Print Redis stats and exit")
 def main(source: str, dry_run: bool, show_stats: bool):
     """Game news ingestion pipeline — crawl → AI process → enqueue."""
-    redis = RedisClient()
-    if not redis.ping():
-        print("ERROR: Redis not reachable — aborting.")
-        sys.exit(1)
+    redis = RedisClient()  # 内部自动降级,Redis挂了available=False,所有方法变no-op
+    if not redis.available:
+        print("WARN: Redis unavailable — running in degraded mode (dedup/stats disabled)")
 
     if show_stats:
         _print_stats(redis)
@@ -150,6 +149,9 @@ def main(source: str, dry_run: bool, show_stats: bool):
 
 
 def _print_stats(redis: RedisClient):
+    if not redis.available:
+        print("Stats: Redis unavailable (degraded mode)")
+        return
     stats = redis.get_stats()
     if not stats:
         print("No stats yet.")
