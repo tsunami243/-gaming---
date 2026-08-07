@@ -9,12 +9,14 @@ import org.example.bigevent.pojo.Article;
 import org.example.bigevent.pojo.PageBean;
 import org.example.bigevent.service.ArticleFavoriteService;
 import org.example.bigevent.service.ArticleService;
+import org.example.bigevent.service.HeatService;
 import org.example.bigevent.service.ViewHistoryService;
 import org.example.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,8 @@ public class ArticleServicelmpl implements ArticleService {
     private ViewHistoryService viewHistoryService;
     @Autowired
     private ArticleFavoriteService articleFavoriteService;
+    @Autowired
+    private HeatService heatService;
 
     @Override
     public void addArticle(Article article) {
@@ -121,6 +125,36 @@ public class ArticleServicelmpl implements ArticleService {
 
         return articleMapper.selectCarouselList(limit);
     }
+    //热度排行榜 TopN（ZSet 优先，Redis 不可用/为空时降级 MySQL heat 排序）
+    @Override
+    public List<Article> getHotList(Integer limit) {
+        List<Integer> ids = heatService.topN(limit);
+        if (ids == null || ids.isEmpty()) {
+            ids = articleMapper.selectHotIdsFromDb(limit);
+        }
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Article> articles = articleMapper.selectByIds(ids);
+        Map<Integer, Article> map = new HashMap<>();
+        for (Article a : articles) {
+            map.put(a.getId(), a);
+        }
+        List<Article> ordered = new ArrayList<>();
+        for (Integer id : ids) {
+            Article a = map.get(id);
+                if (a != null) {
+                    Integer s = heatService.score(id);
+                    if (s != null) {
+                        a.setHeat(s);
+                    }
+                }
+            if (a != null) {
+                ordered.add(a);
+            }
+        }
+        return ordered;
+    }
 
     //统计文章的浏览量、独立浏览量、收藏量、点赞量、评论量（使用独立统计表）
     @Override
@@ -144,6 +178,11 @@ public class ArticleServicelmpl implements ArticleService {
     //计算文章的热度（使用独立统计表）
     @Override
     public Integer calculateHeat(Integer articleId) {
+        // ZSet 优先：命中直接返回（Redis 为实时权威）
+        Integer heatScore = heatService.score(articleId);
+        if (heatScore != null) {
+            return heatScore;
+        }
         Article article = articleMapper.findById(articleId);
         if (article == null) {
             return 0;

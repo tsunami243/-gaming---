@@ -3,6 +3,7 @@ package org.example.bigevent.service.impl;
 import org.example.bigevent.mapper.ArticleFavoriteMapper;
 import org.example.bigevent.pojo.ArticleFavorite;
 import org.example.bigevent.service.ArticleFavoriteService;
+import org.example.bigevent.service.HeatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import java.util.List;
 public class ArticleFavoriteServiceImpl implements ArticleFavoriteService {
     @Autowired
     private ArticleFavoriteMapper favoriteMapper;
+    @Autowired
+    private HeatService heatService;
 
     @Override
     public void addFavorite(Integer articleId, Integer userId) {
@@ -23,6 +26,7 @@ public class ArticleFavoriteServiceImpl implements ArticleFavoriteService {
         ArticleFavorite favorite = new ArticleFavorite(articleId, userId);
         favorite.setCreateTime(LocalDateTime.now());
         favoriteMapper.add(favorite);
+        heatService.incr(articleId, HeatService.DELTA_FAVORITE); // 热度埋点：收藏 +5
     }
 
     @Override
