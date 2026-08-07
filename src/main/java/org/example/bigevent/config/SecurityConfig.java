@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/user/login", "/user/register").permitAll()
                 .requestMatchers("/article-view/**").permitAll()
+                // 推送平台 demo 模块（生产应移入认证链）
+                .requestMatchers("/push/**").permitAll()
 
                 // === 受保护操作（具体规则，放在通配前面） ===
                 .requestMatchers(HttpMethod.POST, "/category").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")

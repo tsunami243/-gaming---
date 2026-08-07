@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bigevent.push.PushTaskMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO push_task (message_id, user_id, content, status, retry_count, last_error)
+        VALUES (#{messageId}, #{userId}, #{content}, #{status}, #{retryCount}, #{lastError})
+    </insert>
+
+    <select id="findByMessageId" resultType="org.example.bigevent.push.PushTask">
+        SELECT id, message_id, user_id, content, status, retry_count, last_error, create_time, update_time
+        FROM push_task
+        WHERE message_id = #{messageId}
+    </select>
+
+    <update id="transition">
+        UPDATE push_task
+        SET status = #{toStatus}, last_error = #{error}, update_time = NOW()
+        WHERE message_id = #{messageId} AND status = #{fromStatus}
+    </update>
+
+    <update id="bumpRetry">
+        UPDATE push_task
+        SET retry_count = retry_count + 1, update_time = NOW()
+        WHERE message_id = #{messageId}
+    </update>
+
+    <update id="updateError">
+        UPDATE push_task
+        SET last_error = #{error}, update_time = NOW()
+        WHERE message_id = #{messageId}
+    </update>
+
+    <select id="listByStatus" resultType="org.example.bigevent.push.PushTask">
+        SELECT id, message_id, user_id, content, status, retry_count, last_error, create_time, update_time
+        FROM push_task
+        WHERE status = #{status}
+        ORDER BY id DESC
+        LIMIT 200
+    </select>
+
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM push_task WHERE status = #{status}
+    </select>
+
+</mapper>
+

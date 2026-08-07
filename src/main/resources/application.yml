@@ -23,8 +23,23 @@ jwt:
   secret-key: ${JWT_SECRET_KEY:tsunami1234567890abcdefghijklmnopqrstuvwxyz}
   expiration: 43200000  # 12小时（毫秒）
 
+# 推送平台 demo 模块配置
+push:
+  token-bucket:
+    capacity: 50        # 令牌桶容量（允许突发）
+    refill-per-second: 50  # 每秒补充速率 = 限流水位（微信频控安全线的一半）
+  max-retry: 3          # 失败最大重试次数，超过进死信
+  mock:
+    api-limit: 50       # 模拟微信 API 每秒上限（超过返回 45009）
+    failure-rate: 0.08  # 模拟网络失败概率
+    permanent-reject-rate: 0.01  # 模拟用户退订（不可重试，直接死信）
+
 #配置MyBatis
 mybatis:
   mapper-locations: classpath:org/example/bigevent/mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+logging:
+  level:
+    org.example.bigevent.mapper: DEBUG
