@@ -3,6 +3,7 @@ package org.example.bigevent.service.impl;
 import org.example.bigevent.mapper.ArticleLikeMapper;
 import org.example.bigevent.pojo.ArticleLike;
 import org.example.bigevent.service.ArticleLikeService;
+import org.example.bigevent.service.HeatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,15 @@ import java.util.List;
 public class ArticleLikeServiceImpl implements ArticleLikeService {
     @Autowired
     private ArticleLikeMapper articleLikeMapper;
+    @Autowired
+    private HeatService heatService;
 
     @Override
     public void addLike(Integer articleId, Integer userId) {
         ArticleLike articleLike = new ArticleLike(articleId, userId);
         articleLike.setCreateTime(LocalDateTime.now());
         articleLikeMapper.add(articleLike);
+        heatService.incr(articleId, HeatService.DELTA_LIKE); // 热度埋点：点赞 +2
     }
 
     @Override

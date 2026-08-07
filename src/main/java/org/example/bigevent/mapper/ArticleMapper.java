@@ -37,4 +37,28 @@ public interface ArticleMapper {
 
     //根据标签查询文章列表
     List<Article> searchByTag(@Param("tag") String tag);
+
+    //ZSet 热度回写 article.heat
+    @Update("update article set heat=#{heat}, heat_updated_at=now() where id=#{id}")
+    void updateHeat(@Param("id") Integer id, @Param("heat") Integer heat);
+
+    //清空轮播标记
+    @Update("update article set is_carousel=0")
+    void resetCarousel();
+
+    //设置轮播标记
+    @Update("<script>update article set is_carousel=1 where id in <foreach collection='ids' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    void setCarousel(@Param("ids") List<Integer> ids);
+
+    //按 ID 批量查询文章
+    @Select("<script>select * from article where id in <foreach collection='ids' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    List<Article> selectByIds(@Param("ids") List<Integer> ids);
+
+    //MySQL 降级/兜底：按 heat 排序取 TopN
+    @Select("select id from article where state='已发布' order by heat desc, id asc limit #{limit}")
+    List<Integer> selectHotIdsFromDb(@Param("limit") Integer limit);
+
+    //全量热度（启动重建 ZSet 用）
+    @Select("select id, heat from article where state='已发布'")
+    List<Article> selectAllHeat();
 }

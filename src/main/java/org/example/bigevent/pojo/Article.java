@@ -32,6 +32,7 @@ public class Article {
     private Integer favorites = 0;//收藏数
     private String tags = "";//标签，JSON数组格式存储
     private Integer isCarousel = 0;//是否轮播图文章，0否，1是
+    private Integer heat = 0;//热度（ZSet 热度榜，定时回写）
 
     public Article() {
     }
@@ -235,6 +236,14 @@ public class Article {
 
     public void setIsCarousel(Integer isCarousel) {
         this.isCarousel = isCarousel;
+    }
+
+    public Integer getHeat() {
+        return heat;
+    }
+
+    public void setHeat(Integer heat) {
+        this.heat = heat;
     }
 
     public String toString() {

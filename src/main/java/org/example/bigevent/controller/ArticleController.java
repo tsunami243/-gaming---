@@ -98,5 +98,14 @@ public class ArticleController {
         Integer heat = articleService.calculateHeat(articleId);
         return Result.success(heat);
     }
+
+    //热度排行榜 TopN
+    @GetMapping("/hot")
+    public Result<List<Article>> hot(@RequestParam(defaultValue = "5") Integer limit){
+        if (limit == null || limit <= 0) {
+            limit = 5;
+        }
+        return Result.success(articleService.getHotList(limit));
+    }
 }
 

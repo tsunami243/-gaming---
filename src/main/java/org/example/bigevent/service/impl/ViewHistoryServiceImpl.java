@@ -2,6 +2,7 @@ package org.example.bigevent.service.impl;
 
 import org.example.bigevent.mapper.ArticleViewHistoryMapper;
 import org.example.bigevent.pojo.ArticleViewHistory;
+import org.example.bigevent.service.HeatService;
 import org.example.bigevent.service.ViewHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,15 @@ import java.time.LocalDateTime;
 public class ViewHistoryServiceImpl implements ViewHistoryService {
     @Autowired
     private ArticleViewHistoryMapper viewHistoryMapper;
+    @Autowired
+    private HeatService heatService;
 
     @Override
     public void recordView(Integer articleId, Integer userId, String ipAddress) {
+        // 热度埋点：Redis Set 判重（首次独立浏览 +4，重复 +1），MySQL 落库逻辑保持不变
+        String member = userId != null ? "u" + userId : "ip:" + (ipAddress == null ? "unknown" : ipAddress);
+        heatService.recordView(articleId, member);
+
         // 检查是否重复浏览（24小时内同一用户/IP只算一次）
         if (userId != null) {
             // 登录用户，按userId检查

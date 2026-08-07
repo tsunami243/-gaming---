@@ -3,6 +3,7 @@ package org.example.bigevent.service.impl;
 import org.example.bigevent.mapper.CommentMapper;
 import org.example.bigevent.pojo.Comment;
 import org.example.bigevent.service.CommentService;
+import org.example.bigevent.service.HeatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +17,15 @@ import java.util.Map;
 public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private HeatService heatService;
 
     @Override
     public void addComment(Comment comment) {
         comment.setCreateTime(LocalDateTime.now());
         comment.setUpdateTime(LocalDateTime.now());
         commentMapper.add(comment);
+        heatService.incr(comment.getArticleId(), HeatService.DELTA_COMMENT); // 热度埋点：评论 +3
     }
 
     @Override
