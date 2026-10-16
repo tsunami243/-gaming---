@@ -29,8 +29,9 @@ import java.util.List;
  *   <li>关闭 CSRF 与 Session——认证完全依赖请求头中的 JWT，服务端不保存会话</li>
  *   <li>授权规则自上而下匹配，<b>具体规则必须写在通配规则之前</b>，例如
  *       {@code /api/v1/admin/**} 要排在 {@code /api/v1/articles/**} 之前，否则会被后者吞掉</li>
- *   <li>{@code /internal/**} 为 permitAll——该链路的防护由
- *       {@code IngestRequestBoundaryFilter} 的令牌校验负责，不在这里做</li>
+ *   <li>{@code /internal/v1/ingest/**} 为 permitAll——该链路已由
+ *       {@code IngestRequestBoundaryFilter} 完成令牌校验；其余 {@code /internal/**}
+ *       一律 {@code denyAll}，防止后续新增内部接口时默认裸奔</li>
  *   <li>认证失败统一返回 401（{@link HttpStatusEntryPoint}），不跳转登录页</li>
  * </ul>
  */
@@ -71,7 +72,10 @@ public class SecurityConfig {
                 .requestMatchers("/user/list").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/**").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/v1/admin/**").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/internal/**").permitAll()
+                // 采集入口的防护由 IngestRequestBoundaryFilter 的令牌校验负责（常量时间比较 + fail-closed）。
+                // 只放行这一个前缀；其余 /internal/** 一律拒绝，避免日后新增内部接口时"漏配即裸奔"。
+                .requestMatchers("/internal/v1/ingest/**").permitAll()
+                .requestMatchers("/internal/**").denyAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/games", "/api/v1/articles/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/category").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/category").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")
@@ -83,7 +87,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/comment/**").authenticated()
                 // Legacy direct like-count mutation is superseded by comment-like and must not be public.
                 .requestMatchers(HttpMethod.PUT, "/comment/**").denyAll()
-                .requestMatchers("/upload").authenticated()
+                // 上传是写操作且有成本，收紧到内容管理员；任意登录用户可传属越权/成本风险。
+                .requestMatchers("/upload").hasAnyRole("CONTENT_ADMIN", "SUPER_ADMIN")
 
                 // === 公开读接口（无方法限制，GET 被上面跳过自然命中这里） ===
                 .requestMatchers("/article/**").permitAll()

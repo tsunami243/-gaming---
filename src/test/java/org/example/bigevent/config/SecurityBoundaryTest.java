@@ -13,6 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -137,6 +139,29 @@ class SecurityBoundaryTest {
                     .andExpect(status().isForbidden());
         }
         mockMvc.perform(get("/user/list")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void uploadIsNotOpenToAnonymousOrRegularUsers() throws Exception {
+        var image = new MockMultipartFile("file", "avatar.png", "image/png", new byte[]{1, 2, 3});
+
+        mockMvc.perform(multipart("/upload").file(image))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(multipart("/upload").file(image).with(user("player").roles("USER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void internalPathsOutsideTheIngestPrefixAreDeniedEvenWhenAuthenticated() throws Exception {
+        // 只有 /internal/v1/ingest/** 由 IngestRequestBoundaryFilter 验令牌后放行；
+        // 其余内部路径必须默认拒绝，避免日后新增内部接口时漏配即裸奔。
+        mockMvc.perform(get("/internal/v1/ops").with(user("editor").roles("CONTENT_ADMIN")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/internal/v1/ops").with(user("root").roles("SUPER_ADMIN")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/internal/v1/ops"))
+                .andExpect(status().isUnauthorized());
     }
 
     private static String validArticleJsonWithId() {

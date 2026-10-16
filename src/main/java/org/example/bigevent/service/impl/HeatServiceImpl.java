@@ -7,13 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 热度榜实现：以 Redis ZSet（{@code hot:rank}）承载文章热度分数。
@@ -31,6 +31,26 @@ public class HeatServiceImpl implements HeatService {
     private static final String VIEW_KEY_PREFIX = "hot:view:";
     /** 独立浏览窗口：24 小时（与 MySQL view_history 一致） */
     private static final long VIEW_WINDOW_SECONDS = 24 * 3600;
+    /** 去重标识缺失时的占位值，保证 Lua 里 SADD 拿到非空成员。 */
+    private static final String UNKNOWN_MEMBER = "unknown";
+
+    /**
+     * 「判重 + 设过期」必须原子完成。
+     *
+     * <p>若拆成两步（先 SADD 再 EXPIRE），进程在两者之间崩溃或 Redis 闪断会让
+     * {@code hot:view:{id}} 成为<b>永不过期</b>的 key——既是内存泄漏，也让该成员
+     * 永远被判为"重复浏览"。放到一个 Lua 脚本里由 Redis 单线程原子执行即可避免。</p>
+     *
+     * <p>KEYS[1]=去重 Set；ARGV[1]=成员；ARGV[2]=过期秒数。返回 1 表示首次浏览。</p>
+     */
+    private static final DefaultRedisScript<Long> RECORD_UNIQUE_VIEW_SCRIPT = new DefaultRedisScript<>(
+            "local added = redis.call('SADD', KEYS[1], ARGV[1])\n" +
+            "if added == 1 then\n" +
+            "  redis.call('EXPIRE', KEYS[1], ARGV[2])\n" +
+            "end\n" +
+            "return added",
+            Long.class
+    );
 
     @Autowired
     private StringRedisTemplate redis;
@@ -39,21 +59,20 @@ public class HeatServiceImpl implements HeatService {
      * 记录一次浏览：同一 {@code member}（用户或 IP）24 小时内只计一次「独立浏览」。
      *
      * <p>首次浏览加 {@link HeatService#DELTA_VIEW_UNIQUE}，重复浏览加
-     * {@link HeatService#DELTA_VIEW_REPEAT}（较小权重）。</p>
+     * {@link HeatService#DELTA_VIEW_REPEAT}（较小权重）。判重与过期由单个 Lua 脚本完成。</p>
      *
      * @param articleId 文章 ID
-     * @param member    去重标识（用户 ID 或访客 IP）
+     * @param member    去重标识（用户 ID 或访客 IP）；为空时按 {@value #UNKNOWN_MEMBER} 计
      */
     @Override
     public void recordView(Integer articleId, String member) {
         try {
             String key = VIEW_KEY_PREFIX + articleId;
-            Long added = redis.opsForSet().add(key, member);
-            if (added != null && added > 0) {
-                redis.expire(key, VIEW_WINDOW_SECONDS, TimeUnit.SECONDS);
-            }
-            double delta = (added != null && added > 0) ? DELTA_VIEW_UNIQUE : DELTA_VIEW_REPEAT;
-            incr(articleId, delta);
+            String normalized = (member == null || member.isBlank()) ? UNKNOWN_MEMBER : member;
+            Long added = redis.execute(RECORD_UNIQUE_VIEW_SCRIPT, List.of(key),
+                    normalized, String.valueOf(VIEW_WINDOW_SECONDS));
+            boolean firstView = added != null && added > 0;
+            incr(articleId, firstView ? DELTA_VIEW_UNIQUE : DELTA_VIEW_REPEAT);
         } catch (Exception e) {
             log.warn("recordView heat failed, articleId={}: {}", articleId, e.getMessage());
         }
@@ -76,6 +95,13 @@ public class HeatServiceImpl implements HeatService {
 
     /**
      * 取热度榜前 {@code n} 篇文章 ID，按分数降序；分数相同时按 ID 升序保证顺序稳定。
+     *
+     * <p><b>为什么拉全量再在 Java 排序</b>：ZSet 对同分成员按 member 的字典序排列，
+     * 而 member 是十进制字符串——{@code "10"} 会排在 {@code "9"} 前面。这里要的是
+     * 「同分按数值 ID 升序」这一确定性口径（{@code rebuild} 后大量文章同为 0 分，
+     * 轮播位依赖该顺序稳定）。因此不能用 {@code reverseRange(0, n-1)} 直接截断：
+     * 截断点落在同分段上就会取错。若榜单规模增长到需要优化，应改成
+     * 「先取 n 个，再按边界分数向后补齐同分成员」，而不是简单截断。</p>
      *
      * @param n 期望返回的条数
      * @return 文章 ID 列表；榜单为空或 Redis 异常时返回 {@code null}（调用方据此降级回库查询）

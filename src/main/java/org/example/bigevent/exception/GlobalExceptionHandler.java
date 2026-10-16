@@ -3,6 +3,7 @@ package org.example.bigevent.exception;
 import org.example.bigevent.pojo.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.StringUtils;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -26,7 +29,10 @@ public class GlobalExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
-     * 处理请求体不可解析、必填参数/请求头缺失、参数类型不匹配四类客户端错误。
+     * 处理请求体不可解析、必填参数/请求头/文件部件缺失、参数类型不匹配等客户端错误。
+     *
+     * <p>{@link MissingServletRequestPartException} 与 {@code MissingServletRequestParameterException}
+     * 并非同一继承体系，multipart 请求漏传 {@code file} part 时抛的是前者，必须显式列出。</p>
      *
      * @param exception 原始异常
      * @return 400 + 统一失败封套
@@ -34,9 +40,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({HttpMessageNotReadableException.class,
             MissingServletRequestParameterException.class,
             MissingRequestHeaderException.class,
+            MissingServletRequestPartException.class,
             MethodArgumentTypeMismatchException.class})
     public ResponseEntity<Result<Void>> badRequest(Exception exception) {
         return ResponseEntity.badRequest().body(Result.error("请求格式或参数无效"));
+    }
+
+    /**
+     * 处理上传文件超出 multipart 上限（由容器在进入控制器前抛出）。
+     *
+     * @param exception 原始异常
+     * @return 413 + 失败封套
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Result<Void>> handleMaxUploadSize(MaxUploadSizeExceededException exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(Result.error("文件大小超出上限"));
     }
 
     /**

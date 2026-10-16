@@ -165,7 +165,15 @@ public class PublicArticleReadServiceImpl implements PublicArticleReadService {
 
     /**
      * 入库正文是带块级标签的清洗 HTML；公开端只渲染纯文本，因此在这里做标签剥离。
-     * 先按块级闭合标签换行，再剥标签，最后单次解码实体，避免二次解码。
+     *
+     * <p><b>顺序很关键：先解码实体，再剥标签。</b>若反序，正文里的
+     * {@code &lt;img src=x onerror=...&gt;} 会先原样保留、解码后变成真正的标签语法并返回给
+     * 客户端——消费方一旦改用 {@code v-html}/富文本渲染即构成存储型 XSS。先解码再剥，
+     * 可保证出口不含任何 {@code <...>} 结构。</p>
+     *
+     * <p>保证的边界：{@link #ANY_TAG} 需要闭合的 {@code >}，因此像 {@code "a < b"} 这种
+     * 孤立尖括号会原样留下。HTML5 解析器对未闭合标签按文本处理，风险很低，
+     * 但消费方若要拿到"绝不含 {@code <}"的严格保证，需在此再做一次实体化处理。</p>
      *
      * @param storedBody 入库正文（可能为 null 或空白）
      * @return 规整后的纯文本；无有效内容时返回 {@code null}
@@ -174,8 +182,8 @@ public class PublicArticleReadServiceImpl implements PublicArticleReadService {
         if (storedBody == null || storedBody.isBlank()) return null;
         String text = BLOCK_CLOSE.matcher(storedBody).replaceAll("\n\n");
         text = LINE_BREAK.matcher(text).replaceAll("\n");
-        text = ANY_TAG.matcher(text).replaceAll("");
         text = decodeEntities(text);
+        text = ANY_TAG.matcher(text).replaceAll("");
         text = TRAILING_SPACES.matcher(text).replaceAll("\n");
         text = EXTRA_BLANK_LINES.matcher(text).replaceAll("\n\n");
         return text.trim().isEmpty() ? null : text.trim();

@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -141,9 +142,14 @@ class PublicArticleReadServiceImplTest {
 
         ArticleDetailResponse detail = service.articleDetail(7);
 
-        assertEquals("INTRO\n\nFirst & second.\n\nThird <tag>.", detail.content());
+        // 出口契约：纯文本里不得残留任何标签结构。因此实现改为"先解码实体、再剥标签"——
+        // 正文中被转义的 &lt;tag&gt; 解码后就是 <tag>，会连同真标签一起被剥掉（宁可丢字符，不可漏标签）。
+        assertEquals("INTRO\n\nFirst & second.\n\nThird .", detail.content());
         assertFalse(detail.content().contains("</p>"), "stored block markup must never reach the public response");
         assertFalse(detail.content().contains("<h2>"), "stored heading markup must never reach the public response");
+        // 断言口径与实现保证对齐：剥的是"完整的 <...> 结构"，孤立的 '<'（如 "a < b"）不在保证范围内。
+        assertFalse(Pattern.compile("<[^>]*>").matcher(detail.content()).find(),
+                "no <...> tag structure may survive into the public response");
         assertEquals("FULL_TEXT", detail.readingMode());
         assertEquals(List.of("cs2"), detail.gameCodes());
         assertEquals("https://example.invalid/cs2", detail.originalUrl());

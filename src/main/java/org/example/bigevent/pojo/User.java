@@ -210,7 +210,16 @@ public class User implements UserDetails {
         return true;
     }
 
+    /**
+     * 输出用户摘要信息。
+     *
+     * <p>刻意<b>不包含</b> {@code password}：任何日志、异常堆栈或调试打印都可能把
+     * BCrypt 哈希带出去，扩大口令离线破解面。</p>
+     *
+     * @return 不含口令的字符串表示
+     */
+    @Override
     public String toString() {
-        return "User{id = " + id + ", username = " + username + ", password = " + password + ", nickname = " + nickname + ", email = " + email + ", userPic = " + userPic + ", createTime = " + createTime + ", updateTime = " + updateTime + "}";
+        return "User{id = " + id + ", username = " + username + ", nickname = " + nickname + ", email = " + email + ", userPic = " + userPic + ", role = " + role + ", createTime = " + createTime + ", updateTime = " + updateTime + "}";
     }
 }
