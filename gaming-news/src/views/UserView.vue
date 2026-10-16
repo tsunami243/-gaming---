@@ -1,56 +1,67 @@
 <template>
-  <div class="page">
-    <div class="pixel-bg"></div>
-    <div class="card">
+  <div class="user-page">
+    <AppHeader title="GAMEBOI / 账户" />
+    <main class="user-frame">
+      <div class="card">
       <!-- 头像 & 用户名 -->
       <div class="profile">
         <div class="avatar">
           <span class="avatar-icon">☻</span>
         </div>
         <div>
-          <h2 class="username">{{ userInfo?.username || '未登录' }}</h2>
+          <h2 class="username">{{ userInfo?.username || (isLoggedIn ? '资料待加载' : '未登录') }}</h2>
           <p class="desc">游戏资讯爱好者</p>
         </div>
       </div>
 
       <!-- 未登录 → 引导 -->
       <div v-if="!isLoggedIn" class="actions">
-        <button class="btn" @click="$router.push('/login')">▶ LOGIN</button>
-        <button class="btn secondary" @click="$router.push('/register')">▶ REGISTER</button>
+        <button class="btn" @click="$router.push('/login')">登录</button>
+        <button class="btn secondary" @click="$router.push('/register')">注册</button>
+      </div>
+
+      <p v-if="userStore.profileLoading" role="status">正在加载资料…</p>
+      <div v-if="userStore.profileError" role="alert">
+        {{ userStore.profileError }}
+        <button :disabled="userStore.profileLoading" @click="userStore.fetchUserInfo()">重试加载资料</button>
       </div>
 
       <!-- 已登录 → 菜单 -->
-      <div v-else class="menu">
-        <button class="menu-item" @click="$router.push('/publish')">
-          <span>发布文章</span><span class="arrow">▸</span>
-        </button>
-        <button class="menu-item" @click="$router.push('/user')">
+      <div v-if="isLoggedIn" class="menu">
+        <button class="menu-item" @click="$router.push('/favorites')">
           <span>我的收藏</span><span class="arrow">▸</span>
+        </button>
+        <button v-if="isContentAdmin" class="menu-item" @click="$router.push('/admin')">
+          <span>内容审核后台</span><span class="arrow">▸</span>
         </button>
         <button class="menu-item danger" @click="handleLogout">
           <span>退出登录</span><span class="arrow">▸</span>
         </button>
       </div>
 
-      <p class="back"><router-link to="/home">← 返回首页</router-link></p>
-    </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
+import AppHeader from '../components/AppHeader.vue'
 const router = useRouter()
 const userStore = useUserStore()
 const userInfo = computed(() => userStore.userInfo)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const isContentAdmin = computed(() => ['ROLE_CONTENT_ADMIN', 'ROLE_SUPER_ADMIN'].includes(userInfo.value?.role))
+onMounted(() => { if (isLoggedIn.value) userStore.fetchUserInfo() })
 const handleLogout = () => { userStore.logout(); router.push('/login') }
 </script>
 
 <style scoped>
-.page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--gb-lightest); position:relative; }
-.card { position:relative; z-index:1; width:100%; max-width:400px; background:var(--gb-light); border:3px solid var(--gb-darkest); box-shadow:6px 6px 0 var(--gb-dark); padding:32px 28px; text-align:center; }
+.user-page { min-height:100vh; display:flex; flex-direction:column; background:var(--gb-canvas); color:var(--gb-ink); }
+.user-frame { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:56px 24px 64px; }
+.card { width:100%; max-width:760px; padding:36px; background:var(--gb-paper); border:1px solid var(--gb-line); border-radius:4px; text-align:center; }
 .profile { display:flex; align-items:center; gap:14px; text-align:left; margin-bottom:24px; padding-bottom:20px; border-bottom:2px solid var(--gb-darkest); }
 .avatar { width:56px; height:56px; border:3px solid var(--gb-darkest); background:var(--gb-lightest); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .avatar-icon { font-size:28px; color:var(--gb-darkest); }
@@ -65,7 +76,4 @@ const handleLogout = () => { userStore.logout(); router.push('/login') }
 .menu-item:hover { background:var(--gb-lightest); padding-left:8px; }
 .menu-item.danger { color:var(--gb-darkest); font-weight:bold; }
 .arrow { font-size:10px; color:var(--gb-dark); }
-.back { margin-top:20px; font-family:var(--font-body); font-size:12px; }
-.back a { color:var(--gb-dark); text-decoration:none; }
-.back a:hover { color:var(--gb-darkest); }
 </style>

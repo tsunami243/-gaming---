@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:proxy": "node scripts/check-proxy.mjs"
   },
   "dependencies": {
     "@vicons/ionicons5": "^0.13.0",

@@ -1,43 +1,37 @@
 import { defineStore } from 'pinia'
-import request from '../utils/request'
+import { getGames } from '../api/public'
 
-const COLOR_MAP = {
-  '三角洲行动':    { bg: '#4ADE80', text: '#052E16', glow: '#86EFAC' },
-  '无畏契约':      { bg: '#DC2626', text: '#FEE2E2', glow: '#FCA5A5' },
-  'Counter-Strike': { bg: '#F97316', text: '#2D1706', glow: '#FDBA74' },
-  'Apex Legends':   { bg: '#EF4444', text: '#FEF2F2', glow: '#FCA5A5' },
-  '三角洲':         { bg: '#4ADE80', text: '#052E16', glow: '#86EFAC' },
-}
+// Keep promises outside serializable Pinia state and isolate them per store instance.
+const pending = new WeakMap()
 
-const DEFAULT_COLOR = { bg: '#3B82F6', text: '#DBEAFE', glow: '#93C5FD' }
+const COLORS = ['#0F380F', '#306230', '#8BAC0F', '#5A8A0F']
 
 export const useCategoryStore = defineStore('category', {
-  state: () => ({
-    items: [],
-    loaded: false
-  }),
+  state: () => ({ items: [], loaded: false, loading: false, error: '' }),
   actions: {
-    async fetchCategories() {
-      if (this.loaded) return this.items
-      try {
-        const res = await request({ url: '/category', method: 'get' })
-        if (res.code === 0) {
-          this.items = res.data || []
+    async fetchCategories(force = false) {
+      if (pending.has(this)) return pending.get(this)
+      if (this.loaded && !force) return this.items
+      this.loading = true
+      this.error = ''
+      const task = Promise.resolve().then(async () => {
+        try {
+          const res = await getGames()
+          if (res.code !== 0 || !Array.isArray(res.data)) throw new Error(res.message || '获取游戏列表失败')
+          this.items = res.data.map((game, index) => ({ ...game, dotColor: COLORS[index % COLORS.length] }))
           this.loaded = true
+        } catch (error) {
+          this.error = error.userMessage || error.message || '获取游戏列表失败'
+        } finally {
+          this.loading = false
+          pending.delete(this)
         }
-      } catch (e) {
-        console.error('Failed to fetch categories', e)
-      }
-      return this.items
+        return this.items
+      })
+      pending.set(this, task)
+      return task
     },
-    getName(id) {
-      const cat = this.items.find(c => c.id === id)
-      return cat ? cat.categoryName : '???'
-    },
-    getColor(id) {
-      const cat = this.items.find(c => c.id === id)
-      const name = cat ? cat.categoryName : ''
-      return COLOR_MAP[name] || DEFAULT_COLOR
-    }
+    getName(code) { return this.items.find(item => item.code === code)?.nameZh || code || '全部游戏' },
+    getColor(code) { return this.items.find(item => item.code === code)?.dotColor || '#0F380F' }
   }
 })

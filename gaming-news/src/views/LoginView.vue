@@ -6,16 +6,16 @@
       <p class="subtitle">玩家登录</p>
       <div class="form">
         <label class="field">
-          <span class="field-label">USERNAME</span>
+          <span class="field-label">用户名</span>
           <input v-model="formData.username" class="input" placeholder="用户名" />
         </label>
         <label class="field">
-          <span class="field-label">PASSWORD</span>
+          <span class="field-label">密码</span>
           <input v-model="formData.password" class="input" type="password" placeholder="密码" />
         </label>
         <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
         <button class="btn" @click="handleLogin" :disabled="loading">
-          {{ loading ? '...' : '▶ LOGIN' }}
+          {{ loading ? '...' : '登录' }}
         </button>
       </div>
       <p class="footer">
@@ -37,19 +37,27 @@ const errorMsg = ref('')
 const formData = reactive({ username: '', password: '' })
 
 const handleLogin = async () => {
+  if (loading.value) return
   errorMsg.value = ''
   if (!formData.username || !formData.password) {
     errorMsg.value = '请输入用户名和密码'
     return
   }
   loading.value = true
-  const result = await userStore.loginAction(formData.username, formData.password)
-  loading.value = false
-  if (result.ok) {
-    const redirect = route.query.redirect || '/home'
-    router.push(redirect)
-  } else {
-    errorMsg.value = '✕ ' + result.msg
+  try {
+    const result = await userStore.loginAction(formData.username, formData.password)
+    if (result.ok) {
+      const candidate = route.query.redirect
+      const redirect = typeof candidate === 'string' && candidate.startsWith('/') && !candidate.startsWith('//')
+        ? candidate : '/home'
+      await router.push(redirect)
+    } else {
+      errorMsg.value = '✕ ' + result.msg
+    }
+  } catch (cause) {
+    errorMsg.value = cause.userMessage || '登录失败，请稍后重试'
+  } finally {
+    loading.value = false
   }
 }
 </script>

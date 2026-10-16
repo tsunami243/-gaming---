@@ -22,18 +22,18 @@ const routes = [
     component: () => import('../views/UserView.vue'),
     meta: { requiresAuth: true }
   },
+  { path: '/favorites', name: 'Favorites', component: () => import('../views/FavoritesView.vue'), meta: { requiresAuth: true } },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { requiresAuth: true }
+  },
   {
     path: '/publish',
-    name: 'Publish',
-    component: () => import('../views/PublishView.vue'),
-    meta: { requiresAuth: true }
+    redirect: '/home'
   },
-  {
-    path: '/message',
-    name: 'Message',
-    component: () => import('../views/MessageView.vue'),
-    meta: { requiresAuth: true }
-  },
+  { path: '/message', redirect: '/home' },
   {
     path: '/login',
     name: 'Login',

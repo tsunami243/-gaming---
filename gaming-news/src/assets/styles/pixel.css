@@ -1,138 +1,52 @@
-/* ============================================================
-   GameBoi — GameBoy LCD 四色绿 全局像素主题
-   全站唯一色板与像素工具类
-   ============================================================ */
-
 :root {
-  /* GameBoy LCD 四色绿 */
-  --gb-darkest:  #0F380F;
-  --gb-dark:     #306230;
-  --gb-light:    #8BAC0F;
-  --gb-lightest: #9BBC0F;
-
-  /* 语义化别名 */
-  --px-text:      var(--gb-darkest);
-  --px-text-dim:  var(--gb-dark);
-  --px-bg:        var(--gb-lightest);
-  --px-bg-panel:  var(--gb-light);
-  --px-border:    var(--gb-darkest);
-
-  /* 像素字体栈 */
-  --font-pixel:  'Press Start 2P', 'Courier New', monospace;
-  --font-zh:     'ZCOOL KuaiLe', 'Courier New', monospace;
-  --font-body:   'Courier New', monospace;
+  --gb-ink: #151619;
+  --gb-muted: #6f737b;
+  --gb-line: #dedfe2;
+  --gb-paper: #ffffff;
+  --gb-canvas: #f5f5f6;
+  --gb-red: #d92d27;
+  --gb-red-dark: #aa201d;
+  --gb-soft-red: #fff0ef;
+  --gb-darkest: var(--gb-ink);
+  --gb-dark: var(--gb-muted);
+  --gb-light: var(--gb-paper);
+  --gb-lightest: var(--gb-canvas);
+  --font-body: Inter, "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  --font-zh: var(--font-body);
+  --font-pixel: var(--font-body);
 }
+* { box-sizing: border-box; }
+html { background: var(--gb-canvas); color: var(--gb-ink); font-family: var(--font-body); }
+body { margin: 0; min-width: 320px; background: var(--gb-canvas); }
+button, input, select { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(217,45,39,.32); outline-offset: 2px; }
+a { color: inherit; }
+.pixel-bg { display: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Shared content cards and compact pages retained from the legacy view layer. */
+.page { min-height: 100vh !important; background: var(--gb-canvas) !important; color: var(--gb-ink) !important; padding: 72px 24px 48px !important; }
+.page .card { max-width: 760px !important; margin: 0 auto !important; padding: 36px !important; background: var(--gb-paper) !important; border: 1px solid var(--gb-line) !important; box-shadow: none !important; border-radius: 4px !important; }
+.page .title { color: var(--gb-ink) !important; font-family: var(--font-body) !important; font-size: clamp(1.75rem, 4vw, 2.6rem) !important; font-weight: 800 !important; letter-spacing: -.05em !important; }
+.page .subtitle, .page .desc { color: var(--gb-muted) !important; font-family: var(--font-body) !important; }
+.page .field-label { color: var(--gb-muted) !important; font-family: var(--font-body) !important; font-size: .75rem !important; font-weight: 700 !important; letter-spacing: .06em !important; }
+.page .input { border: 1px solid var(--gb-line) !important; border-radius: 3px !important; background: #fff !important; color: var(--gb-ink) !important; box-shadow: none !important; }
+.page .input:focus { border-color: var(--gb-red) !important; }
+.page .btn, .page .back-btn, .page .original-link { border: 1px solid var(--gb-red) !important; border-radius: 3px !important; background: var(--gb-red) !important; color: #fff !important; font-family: var(--font-body) !important; font-size: .875rem !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+.page .btn:hover, .page .back-btn:hover, .page .original-link:hover { background: var(--gb-red-dark) !important; }
+.page .menu-item { border-color: var(--gb-line) !important; background: #fff !important; color: var(--gb-ink) !important; font-family: var(--font-body) !important; }
+.page .menu-item.danger { color: var(--gb-red) !important; }
 
-body {
-  font-family: var(--font-body);
-  background-color: var(--gb-lightest);
-  color: var(--gb-darkest);
-  -webkit-font-smoothing: none;
-}
+/* Detail, comments and interaction controls */
+.detail-top { background: #fff !important; border-bottom: 1px solid var(--gb-line) !important; height: 64px !important; }
+.detail-top .top-title { color: var(--gb-ink) !important; font-family: var(--font-body) !important; font-weight: 900 !important; letter-spacing: -.04em !important; }
+.detail-top .back-btn { background: transparent !important; color: var(--gb-ink) !important; border-color: var(--gb-line) !important; }
+.card .title { font-family: var(--font-body) !important; font-size: clamp(2rem, 5vw, 3.5rem) !important; letter-spacing: -.055em !important; line-height: 1.08 !important; }
+.meta { color: var(--gb-muted) !important; line-height: 1.6 !important; }
+.notice, .interactions, .comments { border-color: var(--gb-line) !important; color: var(--gb-muted) !important; }
+.interactions button, .comments button { border: 1px solid var(--gb-line) !important; background: #fff !important; color: var(--gb-ink) !important; border-radius: 3px !important; }
+.interactions button:hover, .comments button:hover { border-color: var(--gb-red) !important; color: var(--gb-red) !important; }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-ul, ol {
-  list-style: none;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-button {
-  border: none;
-  outline: none;
-  background: none;
-  cursor: pointer;
-}
-
-input, textarea {
-  outline: none;
-  border: none;
-}
-
-/* ---- 像素点阵背景（fixed 浮层，各页面直接放 <div class="pixel-bg">） ---- */
-.pixel-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image: radial-gradient(circle, rgba(15, 56, 15, 0.18) 1px, transparent 1px);
-  background-size: 8px 8px;
-}
-
-/* ---- 像素边框工具类 ---- */
-.px-border {
-  border: 3px solid var(--gb-darkest);
-}
-
-.px-shadow {
-  box-shadow: 4px 4px 0 var(--gb-dark);
-}
-
-/* ---- 像素按钮 ---- */
-.px-btn {
-  display: inline-block;
-  padding: 12px 28px;
-  background: var(--gb-light);
-  border: 3px solid var(--gb-darkest);
-  box-shadow: 4px 4px 0 var(--gb-dark);
-  font-family: var(--font-pixel);
-  font-size: 12px;
-  color: var(--gb-darkest);
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
-}
-
-.px-btn:hover {
-  transform: translate(1px, 1px);
-  box-shadow: 3px 3px 0 var(--gb-dark);
-}
-
-.px-btn:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 var(--gb-dark);
-}
-
-/* ---- 像素面板 ---- */
-.px-panel {
-  background: var(--gb-light);
-  border: 3px solid var(--gb-darkest);
-  box-shadow: 4px 4px 0 var(--gb-dark);
-}
-
-/* ---- 像素化图片渲染 ---- */
-.px-img {
-  image-rendering: pixelated;
-}
-
-/* ---- 滚动条 ---- */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--gb-lightest);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--gb-dark);
-  border: 2px solid var(--gb-lightest);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gb-darkest);
-}
+/* Naive UI / admin primitives */
+.n-button--primary-type { --n-color: var(--gb-red) !important; --n-color-hover: var(--gb-red-dark) !important; --n-border: 1px solid var(--gb-red) !important; }
+@media (max-width: 720px) { .page { padding: 40px 16px 92px !important; } .page .card { padding: 26px 20px !important; } }

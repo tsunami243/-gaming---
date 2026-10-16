@@ -6,7 +6,6 @@
         <span class="logo-text">GAMEBOI</span>
       </span>
       <div class="nav-actions">
-        <button class="nav-btn" @click="$router.push('/publish')">+ POST</button>
         <button class="nav-btn secondary" @click="$router.push('/user')">☻</button>
       </div>
     </div>

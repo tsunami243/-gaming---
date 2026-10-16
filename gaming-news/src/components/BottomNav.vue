@@ -22,17 +22,12 @@ const route = useRoute()
 
 const tabs = [
   { key: 'home', name: 'HOME', icon: '⌂', path: '/home' },
-  { key: 'hot',  name: 'HOT',  icon: '★', path: '/home' },
-  { key: 'publish', name: 'POST', icon: '✚', path: '/publish' },
-  { key: 'message', name: 'MSG', icon: '✉', path: '/message' },
   { key: 'user', name: 'ME', icon: '☻', path: '/user' },
 ]
 
 const currentRoute = computed(() => {
   const p = route.path
   if (p === '/home' || p === '/' || p.startsWith('/article')) return 'home'
-  if (p === '/publish') return 'publish'
-  if (p === '/message') return 'message'
   if (p.startsWith('/user')) return 'user'
   return 'home'
 })

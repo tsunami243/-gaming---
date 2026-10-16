@@ -6,16 +6,16 @@
       <p class="subtitle">注册新账号</p>
       <div class="form">
         <label class="field">
-          <span class="field-label">USERNAME</span>
+          <span class="field-label">用户名</span>
           <input v-model="formData.username" class="input" placeholder="用户名（5-16位）" />
         </label>
         <label class="field">
-          <span class="field-label">PASSWORD</span>
+          <span class="field-label">密码</span>
           <input v-model="formData.password" class="input" type="password" placeholder="密码（5-16位）" />
         </label>
         <p v-if="msg.text" class="msg" :class="msg.type">{{ msg.text }}</p>
         <button class="btn" @click="handleRegister" :disabled="loading">
-          {{ loading ? '...' : '▶ REGISTER' }}
+          {{ loading ? '...' : '注册' }}
         </button>
       </div>
       <p class="footer"><router-link to="/login">已有账号？登录 →</router-link></p>

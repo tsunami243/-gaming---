@@ -1,0 +1,10 @@
+import request from '../utils/request'
+export const getModerationArticles = (params) => request({ url: '/v1/admin/articles', method: 'get', params })
+export const getModerationAudit = (id, params) => request({ url: `/v1/admin/articles/${id}/audit`, method: 'get', params })
+export const approveArticle = (id, data) => request({ url: `/v1/admin/articles/${id}/approve`, method: 'post', data })
+export const rejectArticle = (id, data) => request({ url: `/v1/admin/articles/${id}/reject`, method: 'post', data })
+export const unpublishArticle = (id, data) => request({ url: `/v1/admin/articles/${id}/unpublish`, method: 'post', data })
+export const getAdminSources = () => request({ url: '/v1/admin/sources', method: 'get' })
+export const getIngestRuns = (limit = 20) => request({ url: '/v1/admin/ingest-runs', method: 'get', params: { limit } })
+export const pauseSource = (code, reason) => request({ url: `/v1/admin/sources/${code}/pause`, method: 'post', data: { reason } })
+export const resumeSource = (code) => request({ url: `/v1/admin/sources/${code}/resume`, method: 'post' })
