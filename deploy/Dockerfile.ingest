@@ -1,0 +1,17 @@
+FROM python:3.12.11-slim
+RUN useradd --system --uid 10001 --create-home gameboi
+WORKDIR /app
+COPY ingest/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+# Explicit application inputs, not the entire developer ingest directory.
+COPY ingest/main.py ingest/settings.py ./
+COPY ingest/agent ./agent
+COPY ingest/filters ./filters
+COPY ingest/models ./models
+COPY ingest/runtime/*.py ./runtime/
+COPY ingest/spiders ./spiders
+COPY ingest/storage ./storage
+RUN mkdir -p /var/lib/gameboi && chown -R 10001:10001 /var/lib/gameboi /app
+USER 10001
+ENV RUNTIME_STATE_PATH=/var/lib/gameboi/ingest_state.sqlite3 OUTBOX_PATH=/var/lib/gameboi/outbox.sqlite3 CAPACITY_SNAPSHOT_PATH=/var/lib/gameboi/capacity.json
+ENTRYPOINT ["python","main.py"]

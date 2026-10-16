@@ -44,3 +44,17 @@ ingest/.env
 ### Node ###
 gaming-news/node_modules/
 gaming-news/dist/
+
+### 本地智能体数据（含排查记录与口令，禁止入库）###
+.workbuddy/
+
+### 采集运行时状态（本地 SQLite 与调试抓取产物，禁止入库）###
+ingest/runtime/*.sqlite3
+ingest/runtime/*.sqlite3.lock
+ingest/runtime/*.sqlite3-journal
+ingest/runtime/*.html
+
+### 本地环境变量 ###
+.env
+.env.local
+*.env.local

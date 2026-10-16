@@ -1,4 +1,506 @@
 {
+  "schema_version": 1,
+  "updated_at": "2026-10-16",
+  "design_baseline": "docs/PROJECT_DESIGN.md",
+  "design_version": "1.1",
+  "next_task": "WEB-01",
   "features": [
+    {
+      "id": "DOC-00",
+      "milestone": "M0",
+      "priority": "P1",
+      "title": "设计基线与交接入口",
+      "status": "done",
+      "depends_on": [],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "documentation_structure",
+          "result": "PASS: 15 unique task IDs, acyclic dependencies, acceptance sections, 6 local links, fenced blocks and JSON example"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "documentation_secret_scan",
+          "result": "PASS: handoff password absent; no secret value logged"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "documentation_diff_check",
+          "result": "PASS: tracked documentation diff has no whitespace errors; pre-existing HeatService.java whitespace change preserved"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "execution_scope",
+          "result": "Documentation only; no business tests, migrations, source crawling, server changes, git commit or push"
+        }
+      ],
+      "blockers": []
+    },
+    {
+      "id": "BASE-01",
+      "milestone": "M1",
+      "priority": "P0",
+      "title": "项目基线与完整接口矩阵",
+      "status": "done",
+      "depends_on": [
+        "DOC-00"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "scripts/check.ps1",
+          "result": "PASS: backend 13 tests; frontend Vite production build; frontend 2 Vitest tests; Python compile/import smoke"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "frontend_test_harness",
+          "result": "PASS after removing invalid @vue/test-utils cleanup() from setup; added npm test and format utility smoke tests"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "api_audit",
+          "result": "PASS: docs/API_AUDIT.md maps current controllers, security rules, frontend call sites, route paths, and follow-up contract/security risks"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scope",
+          "result": "No HTTP/DB/Redis integration, source crawling, production/server changes, migration, commit, or push performed"
+        },
+        {
+          "date": "2026-09-22",
+          "check": "dry_run_and_exit_code_regression",
+          "result": "PASS: four offline CLI dry-run tests; PowerShell compilation/test failure injection returns exit 1 before import; full scripts/check.ps1 passes with 22 Python tests."
+        }
+      ],
+      "blockers": []
+    },
+    {
+      "id": "SEC-01",
+      "milestone": "M1",
+      "priority": "P0",
+      "title": "权限与公开内容边界",
+      "status": "done",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "authorization_matrix",
+          "result": "PASS: anonymous POST /article -> 401; ROLE_USER article POST/PUT/DELETE and /admin/ingest/consume -> 403; CONTENT_ADMIN article POST -> 200; /push/** and legacy PUT comment like count -> 403"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "published_visibility",
+          "result": "PASS: list/search mapper receives 已发布; unpublished detail resolves to HTTP 404; stats/heat and interaction target guards use requirePublished; hot IDs resolve through published-only query"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "admin_system_article",
+          "result": "PASS: content admin update uses admin mapper path while preserving existing createUser"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "frontend_publish_entry",
+          "result": "PASS: ordinary publish entries removed; direct /publish router navigation redirects /home"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scripts/check.ps1",
+          "result": "PASS: backend 25 tests; frontend production build; frontend 3 Vitest tests; Python compile/import smoke"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scope",
+          "result": "No HTTP/DB/Redis integration, migration, source crawling, server changes, deployment, commit, or push performed"
+        },
+        "Eight public MyBatis statements now require legacy published state AND PUBLISHED workflow. Real XML/annotation SQL rendering + service/security tests: 14 pass. Contradictory-state MySQL execution still pending; admin queries remain separate.",
+        "User profile update now enforces authenticated owner ID; /user/list restricted to SUPER_ADMIN. Ownership/security tests:13 pass, no real user DB touched.",
+        "Unexpected exceptions no longer echo SQL/internal details; request parsing errors return400, v1 failures preserve traceId. Three disclosure tests + malformed-ingest-JSON MVC regression; full check.ps1 passed. Remaining SDK/application logs still need audit."
+      ],
+      "blockers": []
+    },
+    {
+      "id": "DATA-01",
+      "milestone": "M2",
+      "priority": "P0",
+      "title": "版本化数据库与新文章模型",
+      "status": "done",
+      "depends_on": [
+        "SEC-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "flyway_wiring",
+          "result": "PASS: Flyway core/MySQL modules resolved at 11.14.1 under Spring Boot 4.0.5; application migration location configured"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "empty_mysql_migration",
+          "result": "PASS: isolated localhost MySQL 8.0.45 applied V1-V3 from an empty schema; second migrate executed 0 migrations; four enabled game rows verified"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "legacy_copy_upgrade",
+          "result": "PASS: seeded V1 legacy copy upgraded through V2/V3; article ID/category and comment/like/favorite associations preserved; unknown category ID recorded in legacy_article_review"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "resource_and_model_tests",
+          "result": "PASS: Flyway migration layout test and first-release Article/Game/ContentSource model tests pass"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "credential_hygiene",
+          "result": "PASS: application datasource/JWT values now require environment variables; migration resources and new docs contain no credential values"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scope",
+          "result": "No existing local MySQL80 database, remote server, or production data was connected, read, migrated, or modified; temporary local MySQL process/data directory was stopped and removed"
+        },
+        "Boot4 Flyway starter added at existing managed version. Two ApplicationContextRunner tests prove initializer invokes migration strategy and explicit disable prevents it; full check.ps1 passes (backend80, seven DB tests skipped). Empty real DB application startup still unverified."
+      ],
+      "blockers": []
+    },
+    {
+      "id": "API-01",
+      "milestone": "M2",
+      "priority": "P1",
+      "title": "统一契约与兼容期",
+      "status": "done",
+      "depends_on": [
+        "DATA-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "openapi_contract",
+          "result": "PASS: docs/api/openapi.yaml parses; v1 public/admin/internal paths, DTO schemas, page fields, tags array and planned implementation states are validated by scripts/validate_openapi.py"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "public_v1_dto_api",
+          "result": "PASS: GET /api/v1/games, /articles and /articles/{id} return DTOs; list omits HTML; EXTERNAL_SUMMARY detail omits HTML; unsupported contentType returns 422"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "trace_error_contract",
+          "result": "PASS: v1 response/error envelope includes traceId and X-Trace-Id; client trace header propagates through 422 error test"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "compatibility_policy",
+          "result": "PASS: docs/API_COMPATIBILITY.md names each legacy route, v1 mapping, implementation status and removal condition; generator intentionally deferred"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scripts/check.ps1",
+          "result": "PASS: OpenAPI contract; backend 36 tests with 2 safe MySQL skips; frontend build and 3 tests; Python compile/import smoke"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scope",
+          "result": "No frontend v1 migration, administrator UI, internal ingest delivery implementation, source crawling, server change, deployment, commit, or push"
+        }
+      ],
+      "blockers": []
+    },
+    {
+      "id": "ING-01",
+      "milestone": "M3",
+      "priority": "P1",
+      "title": "来源适配与有界处理阶段",
+      "status": "done",
+      "depends_on": [
+        "API-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        {
+          "date": "2026-09-20",
+          "check": "fps_prefilter",
+          "result": "PASS: deterministic four-game allow-list classifies ACCEPT/REVIEW/REJECT with allowed editorial types and explicit reason codes"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "bounded_runtime",
+          "result": "PASS: serial source processing, SQLite singleton lock and persistent daily candidate budget; dry-run does not create runtime state or external clients"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "delivery_safety",
+          "result": "PASS: URL is marked crawled only after queue enqueue; dry-run avoids AI/OSS/queue/dedup/stats writes"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "python_tests",
+          "result": "PASS: 4 ingest unittest cases plus compile/import smoke integrated into scripts/check.ps1"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scripts/check.ps1",
+          "result": "PASS: OpenAPI, backend 36 tests with 2 safe MySQL skips, frontend build/tests, Python 4 unittest cases and smoke"
+        },
+        {
+          "date": "2026-09-20",
+          "check": "scope",
+          "result": "No source crawl, paid AI call, OSS upload, Redis write, server change, deployment, commit, or push"
+        },
+        {
+          "date": "2026-09-22",
+          "check": "dry_run_and_exit_code_regression",
+          "result": "PASS: four offline CLI dry-run tests; PowerShell compilation/test failure injection returns exit 1 before import; full scripts/check.ps1 passes with 22 Python tests."
+        },
+        "Fail-closed source policy: missing config stops before state/AI clients, literal boolean+verified runnable state required, missing Java source returns disabled. Three Python and two Java regressions; full check.ps1 passed.",
+        "Worker OS lock and initialization-finally cleanup; atomic daily reservation. Four tests cover abrupt child exit, concurrent budget cap, legacy lock preservation and constructor failure. Full check.ps1 passes, Python37; Linux branch pending container run.",
+        "Candidate capacity and outbox admission occurs before budget/AI; EXTERNAL_SUMMARY no longer instantiates/uploads OSS images. Three offline pipeline regressions and full check.ps1 pass; hard quota and real sampling remain incomplete.",
+        "Model decision/game/type fields preserved and conservatively merged with deterministic filter; REJECT/REVIEW no longer ignored. Six offline regressions, full check.ps1 passes (Python49). Real quality corpus, persisted failure/review records and auto-publication still incomplete.",
+        "Shared HTML/JSON stream reader rejects decoded text above 2,000,000 bytes and closes responses; redirects capped3. Four response tests; Python53 pass. Decoder peak memory and full SSRF/DNS/redirect target validation still unverified.",
+        "Per-hop exact configured hostname/protocol/standard-port checks; no automatic cross-origin or HTTPS downgrade redirects. Four offline transport regressions, Python57 pass. DNS address pinning/rebinding and source live compatibility not verified."
+      ],
+      "blockers": []
+    },
+    {
+      "id": "ING-02",
+      "milestone": "M3",
+      "priority": "P0",
+      "title": "持久 outbox 与后端幂等交付",
+      "status": "completed",
+      "depends_on": [
+        "ING-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Python SQLite outbox + HTTP ACK tests: ingest/tests/test_outbox.py",
+        "Java idempotency/controller tests: src/test/java/org/example/bigevent/ingest/",
+        "OpenAPI contract: docs/api/openapi.yaml",
+        "V4 Flyway isolation assertions are present; execution remains gated by GAMEBOI_FLYWAY_TEST_URL",
+        "2026-09-20 isolated MySQL 8.0.45: V1-V4 idempotence, legacy upgrade, real receipt/article/article_content/article_game write and rollback tests passed.",
+        "Receipt ACK regression fixed: validate eventId/hash shape/decision/article linkage, reject HTML200/mismatched receipts, retain READY; cache callback failure cannot undo ACK. Full check.ps1 passes with 26 Python tests. Canonical cross-language hash comparison remains unverified.",
+        "SQLite outbox immutable eventId payload, no caller mutation, ACK replay preservation, bounded ready batch and threaded duplicate enqueue verified. Python30 tests pass; canonical cross-language hash/process-kill recovery still pending.",
+        "Ingress validates schema1, receipt-compatible eventId length, nonnull/distinct games, credential-free HTTP(S) URL and offset timestamps before service transaction. Six MockMvc tests pass; UUID-format enforcement/date-only source precision still pending.",
+        "400/409/413/422 persist as QUARANTINED and remain in unresolved budget; 401/403/429/503 halt whole batch and current pipeline. Two tests cover eight status classes, full check.ps1 Python66 pass. Durable backoff/global auth pause/operator replay remain incomplete.",
+        "Persistent delivery_control latches401/403 and defers429/503 at least900s (numeric Retry-After honored). Two restart/time-controlled SQLite tests and full check.ps1 pass, Python68. Operator recovery/alerting and remaining retry policy still pending.",
+        "Read-only outbox inspector reports bounded metadata/counts/pause, never payload or arbitrary legacy errors; three SQLite tests pass including unchanged file bytes and no creation of missing DB. Recovery/replay UI/CLI remains pending.",
+        "Outbox rejects events above256000 encoded UTF-8 bytes and non-finite JSON without truncation/insertion or damage to pending data. Seven bounds/identity tests pass. Persistent failure record,50MB state budget and server HTTP-body bound still pending.",
+        "Internal filter authenticates before reading JSON, rejects declared/actual body >256000 bytes with413 and compressed bodies with415; five filter tests plus controller total12 pass, full check.ps1 pass. Python415 quarantined; slow-client/gateway/container load not verified.",
+        "2026-09-22: outbox now persists next_attempt_at per event, parses Retry-After seconds and HTTP-date, applies bounded exponential backoff without worker sleep, persists a batch pause for network/429/503, and quarantines after five unconfirmed attempts. Nine focused retry tests plus full check.ps1 passed.",
+        "2026-09-22: source fetches now resolve every request/redirect host before transport and reject non-global DNS results; tests prove private DNS is rejected before a request, while redirects and response limits remain bounded. This is a pre-transport guard, not a complete DNS-rebinding connection-pinning proof. Full check.ps1 passed with 88 Python tests.",
+        "2026-09-22: added explicit, single-event QUARANTINED requeue tool with mandatory --confirm and 1–200 character reason. It records outbox_operator_audit, preserves eventId, resets attempts only for the reviewed event, and never clears delivery pauses. Two operator-requeue tests and full check.ps1 passed.",
+        "2026-09-22: main ingestion now counts outbox/state SQLite base, WAL, SHM and journal files against a configurable 50,000,000-byte combined runtime budget before enqueue; it pauses without inserting a new event when reserve fails. Two storage tests plus full check.ps1 passed with 93 Python tests.",
+        "2026-09-22: a real isolated-MySQL MockMvc integration test now proves internal HTTP token/boundary/controller -> Flyway/MyBatis receipt -> idempotent replay -> unpublished 404 -> published public DTO with source and multi-game fields, without Tomcat TCP loopback. Disposable DB dropped and 33067 stopped; full check.ps1 passed."
+      ],
+      "blockers": []
+    },
+    {
+      "id": "ING-03",
+      "milestone": "M3",
+      "priority": "P1",
+      "title": "单游戏纵向样板",
+      "status": "completed",
+      "depends_on": [
+        "ING-02"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Live source verification: python ingest/main.py --source valorant-official --dry-run (2026-09-20, Riot official list/detail HTTP 200)",
+        "Offline captured source + event contract: ingest/tests/test_valorant_official_source.py and ingest/tests/test_valorant_vertical_sample.py",
+        "Isolated MySQL vertical write/replay/publish/query: IngestReceiptMySqlTransactionTest"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "WEB-01",
+      "milestone": "M4",
+      "priority": "P1",
+      "title": "公开页面与接口对齐",
+      "status": "in_progress",
+      "depends_on": [
+        "ING-03"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Vue public client uses /api/v1 games/articles/detail",
+        "ArticleList v1 component tests cover one initial request, filter parameters and error state",
+        "Legacy carousel/message/publish UI references removed after import search",
+        "ArticleList: 4 new interaction regressions for stale response/error isolation, retrying the same page and duplicate load-more prevention. npm test: 10 passed; npm run build: passed. Browser E2E still pending.",
+        "Detail component: 9 additional tests for independent initial request, summary-only output, invalid original URLs, stale route responses and 404 retry; frontend 19 tests and production build passed. E2E remains unverified.",
+        "Real Vite HTTP proxy verified with ephemeral localhost upstream: six paths/methods/status tests plus three forbidden non-forwarding tests. Full check.ps1 passed. Production Nginx runtime and browser E2E not yet verified.",
+        "401 clears reactive/persistent session; stale-token 401 preserves new session; 403 and anonymous login failures do not log out users; login network failure re-enables retry. Five new tests; full check.ps1 passes with 24 frontend tests.",
+        "scripts/check.ps1 -Browser PASS: real Chromium desktop 1440px/mobile 390px UI flows against explicit offline fixture API and production Vue bundle. Not a live Spring/MySQL/Nginx E2E; WEB-01 remains in progress.",
+        "Public DTO gameCodes now use normalized batched article_game associations rather than legacy category IDs; 8 PublicApiV1ControllerTest tests pass. New association SQL still requires isolated MySQL execution.",
+        "Isolated MySQL IngestReceiptMySqlTransactionTest: 4 tests passed, none skipped. Batch associations, paged DTO and detail preserve multi-game labels. Instance stopped; directory C:/mysql-flyway-test retained because cleanup command was policy-rejected.",
+        "Game store coalesces concurrent requests and supports failure retry. Three unit tests plus real desktop/mobile Chromium games-API 503/retry flow pass; full check.ps1 -Browser passes with 27 frontend tests.",
+        "Public summary/detail sourceName now comes from batched content_source mapping and appears on detail page. Full check.ps1 -Browser passed; newly added source SQL awaits isolated MySQL execution.",
+        "Real loopback Spring HTTP + new isolated MySQL: 5 integration tests passed, 0 skipped. Receipt POST201/10 replay200, pending404, fixture publication, source-name/multi-game/summary list-detail, unpublish404. Browser-to-real-backend still pending; temporary MySQL stopped, directory retained.",
+        "Profile reloads on direct navigation with persisted token; loading/error retry and stale-session protection tested. Three new store cases; 30 frontend tests and build pass. Real login/Redis browser integration pending.",
+        "GAMEBOI_BROWSER_E2E=1: production Vue Chromium1440/390 -> local proxy -> real Spring random HTTP port -> isolated MySQL passed; 5 integration tests zero skips, two screenshots visually checked after animation. Not administrator/login/Redis/Nginx coverage.",
+        "Restored article like/favorite controls using existing authenticated APIs. Four regressions cover anonymous isolation, confirmed mutation, double submit, uncertain failure re-read and logout. Full check.ps1 -Browser passes; real Redis/auth interaction E2E still pending.",
+        "Comment service prerequisite: four tests passed for content bounds and same-article parent/reply validation before DB/heat writes. Frontend comment submission remains unopened pending moderation/rate/capacity gates.",
+        "Comment submission is now disabled server-side by default (comments.submission-enabled=false), not only hidden in UI. Seven gate/validation tests pass; public reads remain available. Enablement still requires operational/rate/capacity acceptance.",
+        "Favorites entry now opens authenticated paginated /favorites backed by /api/v1/me/favorites with claims-owned userId and published-only SQL. Two backend + two frontend regressions and full check.ps1 pass; actual SQL/user-isolation database test pending.",
+        "FavoriteHttpBoundaryTest + FavoriteV1ControllerTest: 5 pass. Anonymous401, forged userId ignored, oversized page422 verified through MVC/security. DB launch compound call was policy-rejected; SQL isolation/visibility remains unverified.",
+        "Existing comments restored as public bounded read-only pages with publication checks and escaped text. Three backend/two UI regressions; full check.ps1 -Browser passes, frontend39. New SQL actual DB test pending; submission remains disabled.",
+        "2026-09-22: user-approved visual direction changed from legacy pixel styling to a light FPS esports-media system. Scope, no-new-asset restriction, desktop-first behavior, system-font policy and motion/accessibility constraints are recorded in PROJECT_DESIGN.md and DEVELOPMENT_PLAN.md; implementation and current-run validation remain pending.",
+        "2026-09-22: implemented shared light FPS esports-media tokens, rebuilt GAMEBOI landing/home/list/detail presentation, and restyled account, favorites, and moderation screens without routing/API/auth changes. Current-run frontend verification: npm test PASS (12 files, 43 tests); npm run build PASS. Build reports a pre-existing/remaining >500 kB minified chunk warning (index 1.31 MB), not a build failure.",
+        "2026-10-16: user-approved reading-strategy change to on-site full text. Ingest now stores the crawled body in article.content (MEDIUMTEXT, no migration needed) and sets readingMode=FULL_TEXT; the Article default and ReadingMode docs follow. New ArticleMapper.selectPublishedContentById reads title/body/metadata for published rows only, and new PublicArticleReadService(+Impl) absorbed all former controller helpers (whitelists, paging validation, summary assembly, batched game/source lookups, stored-body-to-plain-text conversion with single-pass entity decoding). PublicApiV1Controller now only receives requests and wraps ApiResponse. listPublishedByFilters was narrowed to an explicit projection that excludes content. Frontend /article/:id already existed; ArticleDetailView now renders the served body via interpolation with pre-wrap (no v-html) and falls back to the summary. Verified in this run: backend mvnw -o test 123 pass/0 fail/10 skipped; the 10 MySQL-gated tests executed 0-skipped against an isolated MySQL 8.0.45 at 127.0.0.1:33067 (V1-V11, real receipt->article->article_content writes, idempotent replay, public DTO); real Spring+MySQL+Chromium chain 5/5 with DOM assertions that no stored markup is rendered; frontend 12 files/45 tests and production build pass; offline Chromium flows pass at 1440px and 390px. Ports 3306/6379 were never contacted. scripts/check.ps1 still reports four false failures because it escalates any native stderr output under ErrorActionPreference=Stop; each underlying command exits 0. Also repaired pre-existing stale selectors in scripts/check-web-browser.py and check-web-live.py left over from the FPS redesign."
+      ],
+      "blockers": []
+    },
+    {
+      "id": "ADMIN-01",
+      "milestone": "M4",
+      "priority": "P1",
+      "title": "审核与轻量运营后台",
+      "status": "in_progress",
+      "depends_on": [
+        "WEB-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Admin v1 list/approve/reject/unpublish implementation with revision optimistic locking",
+        "Admin moderation service and role-boundary MockMvc tests",
+        "Admin pause/resume policy is proven by isolated MySQL integration test.",
+        "Seven moderation service/controller tests passed: equal revision1024 no false conflict; missing/negative/overflow revision rejected before SQL; validation422 preserves v1 traceId.",
+        "Admin status filter/pagination/unpublish/reason controls now wired; prevents duplicate writes and blocks stale revision actions until refresh. Three new UI regressions;42 frontend tests/build pass. Real admin auth/DB workflow and edit/audit screens pending.",
+        "2026-09-22: moderation write actions now require a positive Integer userId from validated JWT claims before any mapper call; audit rows receive that actor ID. Six service tests plus two MVC boundary tests cover missing/malformed claims, no SQL/audit on rejection, and persisted actor attribution. Full scripts/check.ps1 passed; real JWT+Redis and isolated-MySQL moderation E2E remain pending.",
+        "2026-09-22: JwtAuthenticationFilterTest verifies the actual filter puts the verified positive userId into ThreadLocal only during the request chain, builds the matching ROLE_CONTENT_ADMIN principal, clears claims afterwards, and rejects malformed/revoked claims. Full scripts/check.ps1 passed again.",
+        "2026-09-22: implemented GET /api/v1/admin/articles/{id}/audit with bounded newest-first pagination, article-existence validation, admin-only routing and no user-profile/credential fields. Admin UI displays an explicit read-only audit panel with empty/error/pagination states; backend, Vitest and full check.ps1 -Browser passed.",
+        "2026-09-22: real isolated MySQL 8.0.45 at 127.0.0.1:33067 verified V1–V7 including nullable DATE V7, actual moderation approve→audit readback with actor ID, and transaction rollback when audit insert fails. Dedicated test DB was dropped and the test server stopped; 3306 was not contacted. Full check.ps1 -Browser passed after the changes."
+      ],
+      "blockers": [
+        "The existing HTTP ingest-to-MySQL integration test could not start embedded Tomcat in this Windows/JDK environment (loopback SocketException); it is recorded as an environment execution issue and not treated as passing evidence."
+      ]
+    },
+    {
+      "id": "SOURCE-01",
+      "milestone": "M5",
+      "priority": "P1",
+      "title": "四游戏来源注册与接入",
+      "status": "in_progress",
+      "depends_on": [
+        "ADMIN-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Valorant and Apex official sources registered as SHADOW via V5/V6",
+        "Official captured parser fixtures and dry-run tests",
+        "Pause/resume policy gates Python without DB credentials",
+        "Date-only originalPublishedDate carried across Apex/Python/outbox/Java/public DTO/UI without invented midnight or offset. V7 nullable DATE migration added; HTTP/date display regressions and full check.ps1 pass. Actual V7 MySQL execution remains unverified.",
+        "2026-09-22: Delta Force Garena regional official adapter added with captured list/detail fixtures. Controlled requests returned 200; the parser preserves title, 2026-09-04 date-only precision and official URL, and deterministic FPS rules classify the patch notes as delta-force/patch_notes/ACCEPT. V8 seeds the source as FETCH_VERIFIED only (auto publish false); real isolated MySQL V1–V8 migration passed.",
+        "2026-09-22: Steam CS2 API is reachable again (HTTP/1.1 and HTTP/2 200). The adapter was corrected after live evidence showed the API mixes third-party feeds: it now accepts only Community Announcements / steam_community_announcements with the Steam community announcement URL prefix. Two regression tests and a live controlled crawl produced first-party items only; V9 registers cs2-official as FETCH_VERIFIED with auto-publish false.",
+        "2026-09-22: V9 CS2 Steam FETCH_VERIFIED seed was applied on a fresh isolated MySQL 8.0.45 instance together with V1–V9, second-run idempotence and V1 legacy upgrade; the dedicated 127.0.0.1:33067 test process was stopped afterward.",
+        "2026-09-22: VALORANT Esports official source captured from valorantesports.com: list/detail HTTP 200, title/body/date-only parsing fixture and esports classification pass. V10 registers valorant-esports-official as FETCH_VERIFIED (12h/10 candidates, auto-publish false); full check.ps1 passed with 81 Python tests. V10 still needs isolated-MySQL execution evidence.",
+        "2026-09-22: V10 VALORANT Esports seed was applied on a fresh isolated MySQL 8.0.45 instance together with V1–V10, second-run idempotence and V1 legacy upgrade; the dedicated 127.0.0.1:33067 process was stopped afterward.",
+        "2026-09-22: controlled one-candidate dry-run succeeded independently for VALORANT updates, Apex, Delta Force Garena, CS2 and VALORANT Esports. Dry-run made no AI/Redis/SQLite/outbox/internal-delivery writes. CS2 now applies its candidate limit after third-party feed filtering; full check.ps1 passed with 87 Python tests.",
+        "2026-09-22: ALGS official source captured from algs.ea.com: list/detail HTTP 200, title/body parsing fixture and Apex esports classification pass. V11 registers algs-official as FETCH_VERIFIED (12h/10 candidates, auto-publish false); full check.ps1 passed with 91 Python tests. V11 still needs isolated-MySQL execution evidence.",
+        "2026-09-22: V11 ALGS FETCH_VERIFIED seed was applied on a fresh isolated MySQL 8.0.45 instance together with V1–V11, second-run idempotence and V1 legacy upgrade; the dedicated 127.0.0.1:33067 process was stopped afterward.",
+        "2026-09-22: ALGS one-candidate controlled dry-run parsed an Apex esports candidate without AI/Redis/SQLite/outbox/internal-delivery writes. A separate pending-human-review ALGS candidate excerpt was added; it is not frozen evidence.",
+        "2026-09-22: user-suggested xiaoheihe.cn topic entry was anonymously probed without cookies. The landing route returned only an SPA shell; a one-off legacy share-detail probe returned a maintenance message, so no public article list/detail schema, four-game relevance or content-use permission has been verified. Registered only as xiaoheihe-community CANDIDATE; no adapter, DB seed, shadow run or automatic publication added.",
+        "2026-10-16: Delta Force entry was reworked to the domestic official site (df.qq.com) using its first-party flow JSON API, then promoted from FETCH_VERIFIED to SHADOW by an owner-approved V12 migration (auto_publish_enabled stays 0 and PAUSED is preserved); V13 aligned the displayed name/base_url/allowed_domains/language with the domestic entry point while deliberately keeping the source code. First real shadow run: 6 list items -> 5 articles stored (ids 14-18) as FULL_TEXT bodies of 1059-7191 chars, every one PENDING_REVIEW with nothing auto-published. Three defects fixed along the way: the DISALLOWED keyword 主播 was false-rejecting official event posts; IngestEvent.contentType being @NotBlank made REVIEW events with no determinable type undeliverable (backend 400, then QUARANTINED) so TYPE_KEYWORDS gained domestic esports/event wording; and the stale Garena display name was replaced. Verified: Python 112 tests pass; backend 123 tests pass with 0 skipped against an isolated MySQL that actually applied V1-V13 and asserted delta-force is SHADOW."
+      ],
+      "blockers": [
+        "All four games now have at least one official or region-specific FETCH_VERIFIED/SHADOW source, but the required 6–8 quality sources, per-source shadow runs, Delta regional coverage boundary, duplicate/update samples and quality freeze set are still missing."
+      ]
+    },
+    {
+      "id": "XHH-01",
+      "milestone": "M5",
+      "priority": "P1",
+      "title": "小黑盒社区补充来源受控接入",
+      "status": "in_progress",
+      "depends_on": [
+        "SOURCE-01",
+        "ADMIN-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "2026-09-22: anonymous no-cookie probe of the user-suggested topic landing route returned only an SPA shell; one legacy share-detail path returned a maintenance message. No public article-list/detail schema, four-game relevance, usage permission, adapter, database seed, shadow run or automatic publication is claimed.",
+        "2026-09-22: product decisions recorded in DEVELOPMENT_PLAN.md: public/no-login/no-bypass only; metadata plus bounded AI summary; fixed PENDING_HUMAN_REVIEW; official-first deduplication; visible source attribution and original link; AI disabled until B04 approval with strict fail-closed limits.",
+        "2026-09-22: implemented a fail-closed candidate-source registry and CLI guard. --source xiaoheihe-community exits before HTTP, Redis, AI or outbox initialization; AI summary limits default to disabled, 20/day, 1200 input characters, 220 output characters and one attempt. Focused 7 tests and full check.ps1 passed (Python 95)."
+      ],
+      "blockers": [
+        "A stable, publicly accessible and permitted list/detail structure has not been verified.",
+        "B04 provider, budget, credential and content-use approval are required before any paid AI summary call."
+      ]
+    },    {
+      "id": "QUALITY-01",
+      "milestone": "M5",
+      "priority": "P1",
+      "title": "质量门禁与影子运行",
+      "status": "in_progress",
+      "depends_on": [
+        "SOURCE-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "ingest/quality/evaluate.py enforces sample/precision/coverage/no-negative-auto-accept gates",
+        "smoke fixture proves insufficient samples cannot enable auto publish",
+        "Dataset gate now rejects duplicate IDs/content, undeclared frozen split/provenance/language and incomplete 4x20 positive/80 boundary composition. Precision checks game/type; explicit denominators/review rate. Five evaluator tests and full check.ps1 pass; no real quality approval or corpus claimed.",
+        "2026-09-22: added candidate-only preparation/labeling workflow. Five captured official-source excerpts are stored as PENDING_HUMAN_REVIEW candidates, deduped and bounded; evaluator explicitly refuses candidate records as frozen evidence. Seven focused quality tests and full check.ps1 passed, but no human labels or auto-publish eligibility were created."
+      ],
+      "blockers": [
+        "Build and freeze a real 160+ manually labelled source corpus across all four games before evaluating auto-publish eligibility."
+      ]
+    },
+    {
+      "id": "DEPLOY-01",
+      "milestone": "M6",
+      "priority": "P0",
+      "title": "隔离构建与 Compose",
+      "status": "in_progress",
+      "depends_on": [
+        "QUALITY-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "deploy/compose.yaml validates with docker compose config without starting containers",
+        "isolated named volumes/network and frontend-only published port",
+        "Dockerignore excludes secrets/runtime state; ingest Dockerfile COPY uses explicit source scope. Three static guard tests and full check.ps1 pass. No image was built; actual layer inspection/digests/dependency lock still pending.",
+        "Compose caps aligned to design exact3150000000 bytes, equal swap caps, CPU3 cores, bounded logs, Redis96MiB/Java640MiB/MySQL512MiB defaults. Four static budget tests and check-deploy.ps1 pass; no runtime cgroup or peak memory proof."
+      ],
+      "blockers": [
+        "Pin image digests, measure actual cgroup memory/disk use, implement backup/restore and obtain B06 approval before deployment."
+      ]
+    },
+    {
+      "id": "OPS-01",
+      "milestone": "M6",
+      "priority": "P0",
+      "title": "容量保护、备份与资源实测",
+      "status": "in_progress",
+      "depends_on": [
+        "DEPLOY-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [
+        "Python CapacityGuard implements 7/8/10 GB admission decisions with simulated tests",
+        "Corrected host-vs-project accounting: requires fresh full-project component snapshot, unknown/stale fails closed; host-free5GB gate independent. Five capacity tests, full check.ps1 passes (Python40). Real sampler/read-only mount/quota/resource measurement still missing.",
+        "2026-09-22: added a backup/recovery runbook defining isolated restore scope, byte-accounting, approval gates and measurable rehearsal acceptance. It deliberately contains no production execution or secrets; B02/B06 and actual restore remain pending."
+      ],
+      "blockers": [
+        "Need an actual project-owned storage quota and measured container/backup/log resource evidence."
+      ]
+    },
+    {
+      "id": "RELEASE-01",
+      "milestone": "M7",
+      "priority": "P0",
+      "title": "上线批准与小范围发布",
+      "status": "pending",
+      "depends_on": [
+        "OPS-01"
+      ],
+      "acceptance_ref": "docs/DEVELOPMENT_PLAN.md",
+      "evidence": [],
+      "blockers": []
+    }
   ]
 }

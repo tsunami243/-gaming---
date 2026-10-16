@@ -1,0 +1,21 @@
+# Never send credentials, database state or local tooling to any image builder.
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/id_rsa*
+**/id_ed25519*
+**/*.sqlite3*
+**/*.db
+**/*.log
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/.idea/
+**/.codex/
+.git/
+target/
+gaming-news/node_modules/
+gaming-news/dist/
+ingest/tests/

@@ -1,0 +1,353 @@
+openapi: 3.1.0
+info:
+  title: GameBoi First-Release API
+  version: 1.0.0-draft
+  description: |
+    Contract baseline for the FPS-only first release. /api/v1 is public or administrator-facing;
+    /internal/v1 is service-only and must never be exposed by the public web proxy.
+servers:
+  - url: /api/v1
+paths:
+  /articles/{id}/comments:
+    get:
+      operationId: listPublishedArticleComments
+      summary: Read a bounded page of existing comments; submission is disabled
+      parameters:
+        - $ref: '#/components/parameters/articleId'
+        - $ref: '#/components/parameters/pageNum'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200': { description: Page of comment id, displayName, plain-text content, parentId and createdAt }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /me/favorites:
+    get:
+      operationId: listMyFavorites
+      summary: Page the current user's published saved articles
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/pageNum'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Page of id, title, summary and savedAt; unpublished articles excluded
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /games:
+    get:
+      operationId: listGames
+      summary: List enabled first-release games
+      responses:
+        '200':
+          description: Enabled games
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseGames'
+  /articles:
+    get:
+      operationId: listPublicArticles
+      summary: List published article summaries
+      parameters:
+        - $ref: '#/components/parameters/pageNum'
+        - $ref: '#/components/parameters/pageSize'
+        - name: gameCode
+          in: query
+          schema: { type: string, enum: [delta-force, valorant, cs2, apex-legends] }
+        - name: contentType
+          in: query
+          schema: { $ref: '#/components/schemas/ContentType' }
+      responses:
+        '200':
+          description: Page of published summaries only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseArticlePage'
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /articles/{id}:
+    get:
+      operationId: getPublicArticle
+      summary: Get a published article detail
+      parameters:
+        - $ref: '#/components/parameters/articleId'
+      responses:
+        '200':
+          description: Published article detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseArticleDetail'
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/articles:
+    x-implementation-status: partial
+    get:
+      x-implementation-status: implemented
+      operationId: listAdminArticles
+      summary: List articles by workflow state for moderators
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Administrator article page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseArticlePage'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      x-implementation-status: planned
+      operationId: createAdminArticle
+      summary: Create an administrator article
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ArticleWriteRequest' }
+      responses:
+        '201': { description: Created }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/articles/{id}/audit:
+    x-implementation-status: implemented
+    get:
+      operationId: listArticleModerationAudit
+      summary: Read bounded moderation history for one article
+      description: Administrator-only audit trail. Returns actor user IDs and action metadata, never credentials or request headers.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/articleId'
+        - $ref: '#/components/parameters/pageNum'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200': { description: Newest-first bounded audit page }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /admin/articles/{id}/approve:
+    x-implementation-status: implemented
+    post:
+      operationId: approveArticle
+      summary: Publish an article after moderation
+      security: [{ bearerAuth: [] }]
+      parameters: [ { $ref: '#/components/parameters/articleId' } ]
+      responses:
+        '200': { description: Approved }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/articles/{id}/reject:
+    x-implementation-status: implemented
+    post:
+      operationId: rejectArticle
+      summary: Reject a pending article after moderation
+      security: [{ bearerAuth: [] }]
+      parameters: [ { $ref: '#/components/parameters/articleId' } ]
+      responses:
+        '200': { description: Rejected }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/articles/{id}/unpublish:
+    x-implementation-status: implemented
+    post:
+      operationId: unpublishArticle
+      summary: Unpublish a published article
+      security: [{ bearerAuth: [] }]
+      parameters: [ { $ref: '#/components/parameters/articleId' } ]
+      responses:
+        '200': { description: Unpublished }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /internal/v1/ingest/sources/{code}/policy:
+    x-implementation-status: implemented
+    get:
+      operationId: getIngestSourcePolicy
+      summary: Service-only source pause policy for the crawler
+      security: [{ ingestServiceAuth: [] }]
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Source policy }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /internal/v1/ingest/events:
+    x-implementation-status: implemented
+    post:
+      operationId: deliverIngestEvent
+      summary: Idempotently deliver a prepared ingest event
+      description: Service-only endpoint. It is not under /api/v1 and is never public.
+      security: [{ ingestServiceAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IngestEvent' }
+      responses:
+        '200': { description: Previously accepted event receipt, content: { application/json: { schema: { $ref: '#/components/schemas/IngestReceipt' } } } }
+        '201': { description: New event receipt, content: { application/json: { schema: { $ref: '#/components/schemas/IngestReceipt' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ingestServiceAuth:
+      type: apiKey
+      in: header
+      name: X-Ingest-Service-Token
+  parameters:
+    articleId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    pageNum:
+      name: pageNum
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    pageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+  responses:
+    Unauthorized:
+      description: Authentication is required
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    Forbidden:
+      description: Caller lacks the required role
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    NotFound:
+      description: Object does not exist or is not publicly visible
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    Conflict:
+      description: Event ID was reused with a different payload
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    ValidationError:
+      description: Request has invalid fields or violates a business rule
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  schemas:
+    ApiResponse:
+      type: object
+      required: [code, message, data, traceId]
+      properties:
+        code: { type: integer, const: 0 }
+        message: { type: string, example: OK }
+        data: {}
+        traceId: { type: string, minLength: 1 }
+    ErrorResponse:
+      type: object
+      required: [code, message, data, traceId]
+      properties:
+        code: { type: integer, minimum: 1 }
+        message: { type: string }
+        data: { type: 'null' }
+        traceId: { type: string, minLength: 1 }
+    Game:
+      type: object
+      required: [code, nameZh, nameOriginal, aliases, enabled]
+      properties:
+        code: { type: string, enum: [delta-force, valorant, cs2, apex-legends] }
+        nameZh: { type: string }
+        nameOriginal: { type: string }
+        aliases: { type: array, items: { type: string } }
+        enabled: { type: boolean }
+    ContentType:
+      type: string
+      enum: [announcement, patch_notes, event, new_content, guide, esports]
+    ArticleSummary:
+      type: object
+      required: [id, title, summary, gameCodes, contentType, readingMode, workflowStatus, tags, sourceLanguage, ingestedAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        summary: { type: string }
+        gameCodes: { type: array, items: { type: string } }
+        contentType: { $ref: '#/components/schemas/ContentType' }
+        readingMode: { type: string, enum: [EXTERNAL_SUMMARY, FULL_TEXT] }
+        workflowStatus: { type: string, const: PUBLISHED }
+        tags: { type: array, items: { type: string } }
+        sourceName: { type: [string, 'null'] }
+        sourceLanguage: { type: [string, 'null'] }
+        originalPublishedAt: { type: [string, 'null'], format: date-time }
+        originalPublishedDate: { type: [string, 'null'], format: date, description: Date-only evidence; mutually exclusive with originalPublishedAt. }
+        ingestedAt: { type: [string, 'null'], format: date-time }
+        publishedAt: { type: [string, 'null'], format: date-time }
+        coverImg: { type: [string, 'null'], format: uri }
+    ArticleDetail:
+      allOf:
+        - $ref: '#/components/schemas/ArticleSummary'
+        - type: object
+          required: [originalUrl]
+          properties:
+            originalUrl: { type: [string, 'null'], format: uri }
+            content: { type: [string, 'null'], description: Only non-null for FULL_TEXT after server sanitization. }
+    ArticleWriteRequest:
+      type: object
+      required: [title, summary, gameCodes, contentType, readingMode]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        summary: { type: string, minLength: 1, maxLength: 1000 }
+        gameCodes: { type: array, minItems: 1, items: { type: string } }
+        contentType: { $ref: '#/components/schemas/ContentType' }
+        readingMode: { type: string, enum: [EXTERNAL_SUMMARY, FULL_TEXT] }
+        originalUrl: { type: [string, 'null'], format: uri }
+        content: { type: [string, 'null'] }
+    PageArticleSummary:
+      type: object
+      required: [items, total, pageNum, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ArticleSummary' } }
+        total: { type: integer, minimum: 0 }
+        pageNum: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 50 }
+    IngestEvent:
+      type: object
+      required: [schemaVersion, eventId, sourceCode, gameCodes, contentType, originalUrl, fetchedAt, title, summary, decision, ruleVersion]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        eventId: { type: string, format: uuid }
+        sourceCode: { type: string, maxLength: 100 }
+        sourceName: { type: [string, 'null'], maxLength: 200 }
+        sourceLanguage: { type: [string, 'null'], maxLength: 16 }
+        gameCodes: { type: array, minItems: 1, maxItems: 4, items: { type: string, enum: [delta-force, valorant, cs2, apex-legends] } }
+        contentType: { $ref: '#/components/schemas/ContentType' }
+        originalUrl: { type: string, format: uri }
+        fetchedAt: { type: string, format: date-time }
+        originalPublishedAt: { type: [string, 'null'], format: date-time }
+        originalPublishedDate: { type: [string, 'null'], format: date, description: Date-only evidence; mutually exclusive with originalPublishedAt. }
+        title: { type: string, maxLength: 200 }
+        summary: { type: string, maxLength: 1000 }
+        tags: { type: array, maxItems: 50, items: { type: string, maxLength: 64 } }
+        content: { type: [string, 'null'], maxLength: 200000, description: 'Stored article body. The public detail endpoint serves it as plain text when readingMode is FULL_TEXT and omits it for EXTERNAL_SUMMARY.' }
+        decision: { type: string, enum: [ACCEPT, REVIEW, REJECT] }
+        ruleVersion: { type: string, maxLength: 50 }
+    IngestReceipt:
+      type: object
+      required: [eventId, payloadHash, decision]
+      properties:
+        eventId: { type: string, format: uuid }
+        payloadHash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        articleId: { type: [integer, 'null'] }
+        decision: { type: string, enum: [ACCEPT, REVIEW, REJECT] }
+        createdAt: { type: [string, 'null'], format: date-time }
+    ApiResponseGames:
+      allOf: [ { $ref: '#/components/schemas/ApiResponse' }, { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Game' } } } } ]
+    ApiResponseArticlePage:
+      allOf: [ { $ref: '#/components/schemas/ApiResponse' }, { type: object, properties: { data: { $ref: '#/components/schemas/PageArticleSummary' } } } ]
+    ApiResponseArticleDetail:
+      allOf: [ { $ref: '#/components/schemas/ApiResponse' }, { type: object, properties: { data: { $ref: '#/components/schemas/ArticleDetail' } } } ]
+
+
+

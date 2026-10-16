@@ -1,3 +1,5 @@
+> **2026-09-20 文档状态：历史参考。** 当前目标与操作约束以 [AGENTS.md](AGENTS.md)、[设计基线](docs/PROJECT_DESIGN.md)、[开发计划](docs/DEVELOPMENT_PLAN.md) 为准。下文的历史 Bash/WSL、自动运行初始化或自动提交等要求不作为当前执行指令；历史 API/版本/测试结论须重新核实。
+
 # CLAUDE.md
 
 ## 项目概述
