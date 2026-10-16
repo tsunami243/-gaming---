@@ -131,25 +131,28 @@ mysql -u root -p -e "CREATE DATABASE big_event CHARACTER SET utf8mb4;"
 
 ### 2. 后端
 
-`application.yml` 中有两个**必填占位符**，不注入直接启动失败：
+`application.yml` 中的**一切凭据都是必填占位符，不注入直接启动失败**（仓库里不留任何真实口令）：
 
 ```powershell
 $env:JWT_SECRET_KEY       = "<至少 32 字符的随机串>"
 $env:INGEST_SERVICE_TOKEN = "<内部采集接口令牌>"
-```
-
-数据库与 Redis 的连接信息在 `application.yml` 中带有**本地开发默认值**（`root` / `123456`、`localhost:3306`、`localhost:6379`），本地开箱可用；换环境时用 Spring 标准变量覆盖即可：
-
-```powershell
-$env:SPRING_DATASOURCE_URL      = "jdbc:mysql://<host>:3306/big_event?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
-$env:SPRING_DATASOURCE_USERNAME = "<数据库用户>"
-$env:SPRING_DATASOURCE_PASSWORD = "<数据库口令>"
-$env:SPRING_DATA_REDIS_HOST     = "<redis host>"
+$env:DB_USERNAME          = "<数据库用户>"      # 本地通常是 root
+$env:DB_PASSWORD          = "<数据库口令>"
 
 .\mvnw.cmd spring-boot:run
 ```
 
+变量名与 `deploy/compose.yaml`、`init.sh` 保持一致（`DB_USERNAME` / `DB_PASSWORD`），因此同一套值可以同时喂给本地运行、容器部署与初始化检查。换 host/库名时再覆盖连接串与 Redis：
+
+```powershell
+$env:SPRING_DATASOURCE_URL = "jdbc:mysql://<host>:3306/big_event?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+$env:SPRING_DATA_REDIS_HOST = "<redis host>"
+```
+
 > Windows 下若宿主注入了 `SERVER__PORT`，需先 `Remove-Item Env:SERVER__PORT` 再启动，否则端口会被改写。
+>
+> 需要看 SQL 明细日志时加 `--spring.profiles.active=dev`；默认 `logging.level` 是 `info`，
+> 不会把 SQL 与参数值（含邮箱、口令哈希）写进日志。
 
 ### 3. 前端
 
@@ -169,7 +172,8 @@ cd gaming-news && npm install && npm run dev   # http://127.0.0.1:5173
 |---|---|
 | `JWT_SECRET_KEY` | JWT 签名密钥（HS256，长度不足直接启动失败） |
 | `INGEST_SERVICE_TOKEN` | 内部采集接口令牌；未配置时一律拒绝请求（fail-closed） |
-| `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | 数据库连接 |
+| `DB_USERNAME` / `DB_PASSWORD` | 数据库账号口令（**必填**，无内置默认值） |
+| `SPRING_DATASOURCE_URL` | 连接串覆盖；默认指向 `localhost:3306/big_event` |
 | `SPRING_DATA_REDIS_HOST` / `_PORT` | Redis 连接 |
 | `GAMEBOI_FLYWAY_TEST_URL` | 仅测试用：指向隔离 MySQL 以启用门禁测试 |
 
@@ -228,12 +232,21 @@ cd ingest && python -m unittest discover -s tests -t .
 
 **以下内容不得提交到仓库**（已在 `.gitignore` 中排除）：
 
-- `ingest/.env`、`.env.local` —— 包含 DeepSeek Key 与 OSS AccessKey
+- `ingest/.env`、`deploy/.env`、`.env.local` —— 包含 DeepSeek Key、OSS AccessKey 与数据库口令
 - `.workbuddy/` —— 本地开发记录，含排查过程中的账号与令牌
 - `ingest/runtime/*.sqlite3*` —— 采集中间状态与 outbox 载荷
 - `target/`、`gaming-news/node_modules/`、`__pycache__/`
 
-其他约定：密钥只通过环境变量注入，不进 Git、文档或测试输出；令牌比较使用常量时间实现；`.env.example` 中一律使用 `replace-before-use` 占位值。
+其他约定：
+
+- **凭据只走环境变量**，仓库内（含 `application.yml`、`compose.yaml`）不出现任何真实口令；`.env.example` 一律用 `replace-before-use` 占位值。
+- **一旦凭据曾进入 Git、截图或外发文件，即视为已泄露并立即轮换**——数据库改密、DeepSeek Key 重置、OSS AccessKey 在 RAM 控制台禁用旧 Key 后新建。
+- 令牌比较使用常量时间实现；内部采集入口 fail-closed（未配令牌即拒绝）。
+- **账号安全**：登录/注册均过 Redis 令牌桶限流；登录失败统一返回“用户名或密码错误”，且对不存在的账号同样跑一次 BCrypt 比对，消除响应内容与耗时上的账号枚举差异；注册强制 10 字符以上、含字母与数字、UTF-8 下不超过 72 字节（BCrypt 上限）。
+- **上传**：仅 `CONTENT_ADMIN` / `SUPER_ADMIN` 可用，且校验文件魔数（后缀可伪造，不作为依据）。
+- **内部路径**：安全链只放行 `/internal/v1/ingest/**`（由过滤器验令牌），其余 `/internal/**` 一律 403。
+- **日志**：`logging.level` 默认 `info`，避免 SQL 与参数值（邮箱、口令哈希）落日志；DEBUG 仅 dev profile 开启。
+- **公开正文**为服务端剥离标签后的纯文本，前端一律用插值渲染，禁止 `v-html`。
 
 ## 已知限制
 

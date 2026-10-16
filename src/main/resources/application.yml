@@ -3,10 +3,18 @@ spring:
     enabled: true
     locations: classpath:db/migration
     validate-migration-naming: true
+  servlet:
+    multipart:
+      # 默认上限只有 1MB，会让 FileUploadController 里"超 5MB 才报错"的分支永远不可达，
+      # 1~5MB 的文件反而先抛 MaxUploadSizeExceededException。这里显式抬到接口声称的上限。
+      max-file-size: 5MB
+      max-request-size: 6MB
   datasource:
-    url: jdbc:mysql://localhost:3306/big_event?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
+    # 连接串带本地默认值；库名/账号/口令一律从环境变量注入，仓库内不留任何真实凭据。
+    # 变量名与 deploy/compose.yaml、init.sh 保持一致（DB_USERNAME / DB_PASSWORD）。
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/big_event?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 配置Redis连接
   data:
@@ -46,7 +54,8 @@ mybatis:
 
 logging:
   level:
-    org.example.bigevent.mapper: DEBUG
+    # 默认 info：DEBUG 会把 SQL 与参数值（含邮箱、口令哈希）整体打进日志，生产不得开启。
+    org.example.bigevent.mapper: info
 
 ingest:
   service-token: ${INGEST_SERVICE_TOKEN}
@@ -57,3 +66,11 @@ ingest:
 # Enable only after moderation, rate limiting and capacity acceptance.
 comments:
   submission-enabled: false
+
+---
+# 仅本地开发：开启 Mapper SQL 明细日志，便于排查。
+# 用法：java -jar app.jar --spring.profiles.active=dev
+spring.config.activate.on-profile: dev
+logging:
+  level:
+    org.example.bigevent.mapper: debug

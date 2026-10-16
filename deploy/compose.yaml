@@ -1,4 +1,6 @@
 name: gameboi
+# 所有凭据均来自宿主环境（推荐 `docker compose --env-file deploy/.env`）。
+# deploy/.env 不入库（见 .gitignore / .dockerignore），仓库里只保留 .env.example 占位模板。
 services:
   mysql:
     image: mysql:8.4.6
@@ -65,6 +67,13 @@ services:
       INGEST_INTERNAL_BASE_URL: http://backend:8080
       INGEST_SERVICE_TOKEN: ${INGEST_SERVICE_TOKEN}
       REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # 第三方凭据一律由宿主环境/compose env-file 注入，绝不写进镜像或仓库。
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      OSS_ENDPOINT: ${OSS_ENDPOINT:-oss-cn-beijing.aliyuncs.com}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID:-}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET:-}
+      OSS_BUCKET_NAME: ${OSS_BUCKET_NAME:-}
       RUNTIME_STATE_PATH: /var/lib/gameboi/ingest_state.sqlite3
       OUTBOX_PATH: /var/lib/gameboi/outbox.sqlite3
       CAPACITY_SNAPSHOT_PATH: /var/lib/gameboi/capacity.json
