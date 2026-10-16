@@ -13,6 +13,7 @@ class RedisClient:
     """
 
     def __init__(self):
+        """初始化连接池并主动探活；失败时进入降级模式。"""
         self._available = False
         self._r = None
         try:
@@ -35,6 +36,11 @@ class RedisClient:
 
     @property
     def available(self) -> bool:
+        """当前 Redis 是否可用。
+
+        Returns:
+            可用返回 True，否则 False。
+        """
         return self._available
 
     # ============================================================
@@ -82,6 +88,12 @@ class RedisClient:
             return 0
 
     def set_stat(self, field: str, value: str) -> None:
+        """写入统计字段。降级模式下静默跳过。
+
+        Args:
+            field: 统计字段名。
+            value: 字段值。
+        """
         if not self._available:
             return
         try:
@@ -90,6 +102,11 @@ class RedisClient:
             pass
 
     def get_stats(self) -> dict:
+        """获取全部统计字段。降级模式返回空字典。
+
+        Returns:
+            统计字段到值的映射。
+        """
         if not self._available:
             return {}
         try:
@@ -107,6 +124,11 @@ class RedisClient:
         return hashlib.md5(url.encode()).hexdigest()
 
     def ping(self) -> bool:
+        """检查 Redis 连通性。
+
+        Returns:
+            连通返回 True，否则 False。
+        """
         if not self._available:
             return False
         try:

@@ -8,6 +8,11 @@ class QueueProducer:
     """Writes articles into the Redis queue (ingest:article_queue)."""
 
     def __init__(self, redis_client: RedisClient):
+        """绑定底层 Redis 客户端。
+
+        Args:
+            redis_client: 用于写入队列与统计的 Redis 客户端。
+        """
         self._redis = redis_client
 
     def enqueue(self, article: ProcessedArticle) -> int:
@@ -31,4 +36,9 @@ class QueueProducer:
         return count
 
     def queue_length(self) -> int:
+        """返回当前 Redis 队列长度。
+
+        Returns:
+            队列中的元素数量。
+        """
         return self._redis._r.llen(settings.REDIS_QUEUE_KEY)

@@ -11,6 +11,7 @@ class DeepSeekAgent:
     """Calls DeepSeek API (OpenAI-compatible) to process a raw article."""
 
     def __init__(self):
+        """初始化 DeepSeek 客户端与所用的模型名。"""
         self._client = OpenAI(
             api_key=settings.DEEPSEEK_API_KEY,
             base_url=settings.DEEPSEEK_BASE_URL,
@@ -46,7 +47,12 @@ class DeepSeekAgent:
                         source=raw.source,
                         original_url=raw.original_url,
                         crawled_at=raw.crawled_at.isoformat(),
+                        original_published_at=raw.original_published_at.isoformat() if raw.original_published_at else "",
+            original_published_date=raw.original_published_date.isoformat() if raw.original_published_date else "",
                         confidence=0.0,
+                        is_gaming=False,
+                        decision="REJECT",
+                        reason_code="PROCESSING_FAILED",
                     )
                 print(f"[DeepSeek] 第 {attempt} 次调用失败: {exc}, 1秒后重试...")
                 time.sleep(1)
@@ -56,6 +62,15 @@ class DeepSeekAgent:
     # ============================================================
 
     def _call(self, raw: RawArticle, user_prompt: str) -> ProcessedArticle:
+        """调用一次 DeepSeek 对话接口并把返回内容解析为 ProcessedArticle。
+
+        Args:
+            raw: 原始文章数据，用于字段兜底。
+            user_prompt: 已构造好的用户提示词。
+
+        Returns:
+            解析并填充后的处理结果。
+        """
         resp = self._client.chat.completions.create(
             model=self._model,
             messages=[
@@ -87,8 +102,14 @@ class DeepSeekAgent:
             source=raw.source,
             original_url=raw.original_url,
             crawled_at=raw.crawled_at.isoformat(),
+            original_published_at=raw.original_published_at.isoformat() if raw.original_published_at else "",
+            original_published_date=raw.original_published_date.isoformat() if raw.original_published_date else "",
             confidence=float(data.get("confidence", 0.5)),
             is_gaming=bool(is_gaming),
+            decision=data.get('decision', 'REVIEW'),
+            game_codes=data.get('game_codes', []),
+            content_type=data.get('content_type'),
+            reason_code=data.get('reason_code'),
         )
 
     @staticmethod
@@ -101,3 +122,4 @@ class DeepSeekAgent:
             if text.endswith("```"):
                 text = text[:-3]
         return json.loads(text)
+

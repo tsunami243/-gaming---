@@ -1,0 +1,4 @@
+{"id":"valorant-patch","title":"VALORANT Patch Notes","text":"patch update","expectedDecision":"ACCEPT"}
+{"id":"apex-event","title":"Apex Legends Event","text":"event","expectedDecision":"ACCEPT"}
+{"id":"account-sale","title":"无畏契约账号交易","text":"卖号","expectedDecision":"REJECT"}
+{"id":"other-game","title":"Minecraft update","text":"patch","expectedDecision":"REJECT"}

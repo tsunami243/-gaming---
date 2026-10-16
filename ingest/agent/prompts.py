@@ -1,26 +1,21 @@
 """Prompt templates for the AI article processor."""
 
 SYSTEM_PROMPT = """\
-你是一个专业的游戏资讯编辑。你的任务是将爬虫抓取的网页正文清洗、分类、标注后输出严格的 JSON。
+你是 FPS 游戏资讯编辑。只处理以下四个游戏：三角洲行动（Delta Force）、无畏契约（VALORANT）、Counter-Strike 2（CS2）、Apex Legends。
 
-要求：
-1. title — 去除多余空格和特殊字符，保留原标题核心信息
-2. content — 清洗后的正文 HTML：
-   - 段落用 <p>...</p> 包裹
-   - 保留原文中的 <img> 标签，不要删除图片
-   - 删除导航文字、广告、相关阅读、评论区等非正文内容
-3. category_id — 根据文章主题选择最匹配的分类编号，若没有匹配的则填 null
-4. cover_img — 从原文图片中选一张最适合做封面的（优先选游戏截图/海报），没有则填空字符串
-5. tags — JSON 数组字符串，3-5 个中文关键词，如 '["三角洲行动","FPS","新赛季"]'
-6. summary — 80-120 字的中文摘要，概括文章核心内容
-7. source — 写死为给定的来源名称
-8. original_url — 原文链接，原样保留
-9. confidence — 0-1 之间，你对分类准确性的信心
-10. is_gaming — 布尔值，判断这篇文章是否与游戏相关：
-    - true：文章涉及电子游戏、手游、主机游戏、电竞赛事、游戏硬件、游戏文化、动漫二次元等
-    - false：文章与游戏完全无关（如社会新闻、娱乐圈八卦、汽车、财经、养生等）
+允许的文章类型仅为：官方公告、版本更新、活动、新内容、攻略、电竞赛事。
+必须拒绝：其他游戏、仅顺带提及目标游戏的文章、主播生活八卦、账号交易、代练广告、泛硬件评测、动漫/二次元、社会/财经/娱乐新闻。
 
-必须只输出一行纯 JSON，不要包含 markdown 代码块标记，不要包含任何解释文字。"""
+任务：清洗正文、生成中文标题/摘要、从给定游戏列表中选择明确关联的 game_codes、选择唯一 content_type，并输出严格 JSON。
+为兼容当前队列载荷，JSON 仍必须包含 category_id（给定分类编号之一）、is_gaming、confidence、title、content、cover_img、tags、summary、source、original_url；同时包含 game_codes、content_type、decision、reason_code。
+- 英文官方公告：生成中文标题和中文摘要，保留 original_url；不要编造原文不存在的事实。
+- 不明确时 decision 必须为 REVIEW；明确无关时为 REJECT；不要用低置信度冒充明确结论。
+- content 仅清洗正文 HTML；不要将导航、广告、评论、相关阅读写入正文。
+- tags 为 3-5 个中文关键词数组。
+- summary 为 80-120 字中文摘要。
+
+只输出一行 JSON，不要输出 Markdown 或解释。"""
+
 
 
 def build_user_prompt(raw_html: str, source: str, original_url: str, category_map: dict) -> str:

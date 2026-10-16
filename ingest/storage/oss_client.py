@@ -11,6 +11,7 @@ class OssClient:
     """Download external images → upload to OSS → return OSS URLs."""
 
     def __init__(self):
+        """按配置初始化 OSS Bucket 与 HTTP 客户端；缺少凭证时进入未配置状态。"""
         self._configured = bool(
             settings.OSS_ACCESS_KEY_ID
             and settings.OSS_ACCESS_KEY_SECRET
@@ -43,6 +44,14 @@ class OssClient:
         img_pattern = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
 
         def replace_img(match):
+            """替换单个 img 标签的 src 为上传后的 OSS URL。
+
+            Args:
+                match: 正则匹配对象，group(1) 为原始图片地址。
+
+            Returns:
+                替换 src 后的完整 img 标签文本。
+            """
             old_url = match.group(1)
             new_url = self._download_and_upload(old_url, article_dir)
             return match.group(0).replace(old_url, new_url)
@@ -81,6 +90,14 @@ class OssClient:
     # ============================================================
 
     def _public_url(self, oss_path: str) -> str:
+        """按 OSS 对象路径拼接可公开访问的 URL。
+
+        Args:
+            oss_path: OSS 中的对象路径。
+
+        Returns:
+            公网访问 URL。
+        """
         return f"https://{settings.OSS_BUCKET_NAME}.{settings.OSS_ENDPOINT}/{oss_path}"
 
     @staticmethod
