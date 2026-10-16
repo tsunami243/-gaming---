@@ -24,11 +24,16 @@ public class HeatSyncTask {
 
     @Autowired
     private StringRedisTemplate redis;
+
     @Autowired
     private ArticleMapper articleMapper;
+
     @Autowired
     private HeatService heatService;
 
+    /**
+     * 启动自检：若热度榜为空则从数据库全量重建，避免 Redis 重启后榜单归零。
+     */
     @PostConstruct
     public void init() {
         try {

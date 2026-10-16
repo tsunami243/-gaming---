@@ -8,12 +8,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
-public class User implements org.springframework.security.core.userdetails.UserDetails {
+/**
+ * 用户实体：账号、展示信息与角色；同时实现 Spring Security 的 UserDetails 以接入鉴权。
+ *
+ * <p>{@code password} 存储的是加密后的口令，接口返回前必须置空，禁止外泄。</p>
+ */
+public class User implements UserDetails {
     @NotNull(message = "主键ID不能为空")
     private Integer id;//主键ID
     private String username;//用户名

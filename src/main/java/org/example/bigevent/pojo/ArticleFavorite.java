@@ -2,6 +2,7 @@ package org.example.bigevent.pojo;
 
 import java.time.LocalDateTime;
 
+/** 文章收藏记录：记录「哪个用户收藏了哪篇文章」及收藏时间。 */
 public class ArticleFavorite {
     private Integer id;//主键ID
     private Integer articleId;//文章ID

@@ -11,17 +11,24 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import jakarta.annotation.PostConstruct;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.Map;
 
 /**
- * Polls the Redis ingest queue every N seconds and creates draft articles.
+ * 采集队列消费者（legacy 通道）：定时轮询 Redis 列表并把消息落成草稿文章。
  *
- * Queue contract (with Python side):
- *   Python RPUSH  →  ingest:article_queue
- *   Java    LPOP  ←  ingest:article_queue
+ * <p>本类已被内部 HTTP 入库接口（{@code InternalIngestController}）取代，
+ * 默认关闭，仅当配置 {@code ingest.legacy-queue.enabled=true} 时装配。</p>
+ *
+ * <p>队列契约（与 Python 采集侧约定）：</p>
+ * <pre>
+ *   Python 端 RPUSH  →  ingest:article_queue
+ *   Java   端 LPOP   ←  ingest:article_queue
+ * </pre>
  */
 @Component
+@ConditionalOnProperty(name = "ingest.legacy-queue.enabled", havingValue = "true")
 public class ArticleIngestConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(ArticleIngestConsumer.class);
@@ -39,11 +46,18 @@ public class ArticleIngestConsumer {
 
     private final JsonParser jsonParser = JsonParserFactory.getJsonParser();
 
+    /** 启动时打印队列名，便于确认 legacy 通道确实被装配。 */
     @PostConstruct
     public void init() {
         log.info("ArticleIngestConsumer started — queue: {}", QUEUE_KEY);
     }
 
+    /**
+     * 轮询消费一条队列消息：解析 JSON → 转 Article → 落库为草稿。
+     *
+     * <p>采用「先弹出、失败再推回队尾」的策略，避免坏消息阻塞队列；
+     * 单次只处理一条，失败时把原始载荷放回，等待下一轮重试。</p>
+     */
     @Scheduled(initialDelay = 5_000, fixedDelay = POLL_INTERVAL_MS)
     public void consume() {
         String payload = stringRedisTemplate.opsForList().leftPop(QUEUE_KEY);
@@ -67,6 +81,13 @@ public class ArticleIngestConsumer {
         }
     }
 
+    /**
+     * 把队列消息映射为草稿文章实体。
+     *
+     * @param map 消息键值对，需包含 title 与 content
+     * @return 状态为「草稿」的 Article
+     * @throws IllegalArgumentException 标题为空或正文不足 50 字符时抛出（触发消息回队重试）
+     */
     Article toArticle(Map<String, Object> map) {
         String title = str(map, "title");
         if (title.isBlank()) {
@@ -86,14 +107,29 @@ public class ArticleIngestConsumer {
         return article;
     }
 
+    /**
+     * 读取字符串字段，缺失时返回空串。
+     *
+     * @param map 消息键值对
+     * @param key 字段名
+     * @return 字段文本，缺失为 {@code ""}
+     */
     private static String str(Map<String, Object> map, String key) {
         Object v = map.get(key);
         return v == null ? "" : v.toString();
     }
 
+    /**
+     * 读取整型字段，缺失或非数字时返回 0。
+     *
+     * @param map 消息键值对
+     * @param key 字段名
+     * @return 字段整数值，缺失为 {@code 0}
+     */
     private static Integer intVal(Map<String, Object> map, String key) {
         Object v = map.get(key);
         if (v instanceof Number n) return n.intValue();
         return 0;
     }
 }
+

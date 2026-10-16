@@ -2,6 +2,7 @@ package org.example.bigevent.pojo;
 
 import java.time.LocalDateTime;
 
+/** 文章点赞记录：记录「哪个用户点赞了哪篇文章」及点赞时间。 */
 public class ArticleLike {
     private Integer id;//主键ID
     private Integer articleId;//文章ID

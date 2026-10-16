@@ -21,9 +21,15 @@ public class CarouselTask {
 
     @Autowired
     private ArticleMapper articleMapper;
+
     @Autowired
     private HeatService heatService;
 
+    /**
+     * 重建轮播位：先清空全部轮播标记，再写入当前热度 Top5。
+     *
+     * <p>整段包在 try/catch 内——定时任务失败只落日志，不影响其它调度任务。</p>
+     */
     @Scheduled(cron = "0 0 6 * * ?")
     public void refreshCarousel() {
         try {

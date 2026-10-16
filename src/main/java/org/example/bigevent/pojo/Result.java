@@ -3,6 +3,13 @@ package org.example.bigevent.pojo;
 
 //统一响应结果
 
+/**
+ * 统一响应封套（legacy 通道）。
+ *
+ * <p>新接口使用 {@code ApiResponse}；本类保留用于兼容尚未迁移的旧控制器。</p>
+ *
+ * @param <T> 业务数据类型
+ */
 public class Result<T> {
     private Integer code;//业务状态码  0-成功  1-失败
     private String message;//提示信息

@@ -5,6 +5,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 评论实体：支持两级结构——顶级评论 {@code parentId} 为 null，回复则指向其父评论。
+ *
+ * <p>{@code replyId} 表示「回复了谁」，用于展示"回复 @某某"；{@code replies} 是
+ * 非数据库字段，仅在组装评论树时填充。</p>
+ */
 public class Comment {
     private Integer id;//主键ID（新建时自动生成）
     private Integer articleId;//文章ID

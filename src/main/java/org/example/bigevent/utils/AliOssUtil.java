@@ -8,6 +8,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 
+/**
+ * 阿里云 OSS 上传工具（legacy 通道）。
+ *
+ * <p>凭据从环境变量 {@code OSS_ACCESS_KEY_ID} / {@code OSS_ACCESS_KEY_SECRET} 读取，
+ * 桶名与地域为硬编码常量。当前采集链路已不再依赖 OSS（图片上传移出首期流程），
+ * 本类仅服务于尚未下线的 legacy 上传接口。</p>
+ */
 public class AliOssUtil {
     // Endpoint以华北1（北京）为例，其它Region请按实际情况填写。
     private static final String ENDPOINT = "https://oss-cn-beijing.aliyuncs.com";
@@ -25,6 +32,17 @@ public class AliOssUtil {
     // 填写Bucket所在地域。以华北1（北京）为例，Region填写为cn-beijing。
     private static final String REGION = "cn-beijing";
 
+    /**
+     * 上传一个流对象到 OSS。
+     *
+     * <p>异常被就地捕获并打印，失败时返回空串而非抛出——调用方需自行判断返回值是否为空。
+     * 无论成败都会关闭 OSS 客户端以释放连接资源。</p>
+     *
+     * @param ObjectName 对象键（即上传后在桶内的路径/文件名）
+     * @param in         待上传的输入流
+     * @return 上传成功返回可访问的 HTTPS 地址，失败返回空串
+     * @throws Exception 参数非法等未在方法内捕获的异常
+     */
     public static String uploadFile(String ObjectName, InputStream in) throws Exception {
         String url = "";
         // 创建OSSClient实例。

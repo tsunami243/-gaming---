@@ -1,4 +1,8 @@
 spring:
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-migration-naming: true
   datasource:
     url: jdbc:mysql://localhost:3306/big_event?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -20,7 +24,7 @@ spring:
         shutdown-timeout: 1s
 # JWT 配置
 jwt:
-  secret-key: ${JWT_SECRET_KEY:tsunami1234567890abcdefghijklmnopqrstuvwxyz}
+  secret-key: ${JWT_SECRET_KEY}
   expiration: 43200000  # 12小时（毫秒）
 
 # 推送平台 demo 模块配置
@@ -43,3 +47,13 @@ mybatis:
 logging:
   level:
     org.example.bigevent.mapper: DEBUG
+
+ingest:
+  service-token: ${INGEST_SERVICE_TOKEN}
+
+  legacy-queue:
+    enabled: false  # Only enable during a documented, one-time legacy Redis backlog migration.
+
+# Enable only after moderation, rate limiting and capacity acceptance.
+comments:
+  submission-enabled: false

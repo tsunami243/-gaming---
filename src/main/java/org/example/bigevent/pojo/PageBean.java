@@ -10,7 +10,12 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageBean <T>{
+/**
+ * 通用分页封装：总数 + 当前页数据。
+ *
+ * @param <T> 列表元素类型
+ */
+public class PageBean<T> {
     private Long total;//总条数
     private List<T> items;//当前页数据集合
 }

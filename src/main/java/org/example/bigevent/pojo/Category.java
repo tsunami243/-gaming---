@@ -7,6 +7,12 @@ import jakarta.validation.groups.Default;
 
 import java.time.LocalDateTime;
 
+/**
+ * 文章分类实体（legacy 模型）。
+ *
+ * <p>新链路已用「游戏」取代分类（见 {@code game} 与 {@code article_game}），
+ * 本类仅供尚未下线的 legacy 分类接口使用。</p>
+ */
 public class Category {
     @NotNull(groups = Update.class)
     private Integer id;//主键ID

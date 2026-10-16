@@ -70,7 +70,7 @@ echo ""
 echo "[2/5] 网络服务"
 
 if command -v mysql &>/dev/null; then
-    if mysql -u root -p123456 -e "SELECT 1" big_event &>/dev/null 2>&1; then
+    if mysql -u "${DB_USERNAME:?DB_USERNAME is required}" -p"${DB_PASSWORD:?DB_PASSWORD is required}" -e "SELECT 1" big_event &>/dev/null 2>&1; then
         pass "MySQL: 可连接, 数据库 big_event 存在"
     else
         warn "MySQL 可连接但数据库 big_event 可能不存在，请先执行:"

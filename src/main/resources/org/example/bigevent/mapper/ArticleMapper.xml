@@ -7,6 +7,7 @@
     <select id="list" resultType="org.example.bigevent.pojo.Article">
         select * from article
         <where>
+            state='已发布' and workflow_status='PUBLISHED'
             <if test="categoryId!=null">
                 and category_id=#{categoryId}
             </if>
@@ -20,13 +21,35 @@
         order by create_time desc
     </select>
 
+    <select id="listPublishedByFilters" resultType="org.example.bigevent.pojo.Article">
+        select distinct
+            a.id, a.title, a.summary, a.cover_img, a.state, a.category_id, a.source_id,
+            a.original_url, a.original_title, a.source_language, a.original_published_at,
+            a.original_published_date, a.ingested_at, a.published_at, a.content_type,
+            a.reading_mode, a.workflow_status, a.workflow_reason_code, a.tags, a.heat,
+            a.is_carousel, a.views, a.create_time, a.update_time
+        from article a
+        join article_game ag on ag.article_id = a.id
+        join game g on g.id = ag.game_id and g.enabled = 1
+        <where>
+            a.state = '已发布'
+            and a.workflow_status = 'PUBLISHED'
+            <if test="gameCode != null and gameCode != ''">
+                and g.code = #{gameCode}
+            </if>
+            <if test="contentType != null and contentType != ''">
+                and a.content_type = #{contentType}
+            </if>
+        </where>
+        order by coalesce(a.published_at, a.update_time) desc, a.id desc
+    </select>
+
     <!--根据标签查询文章列表-->
     <select id="searchByTag" resultType="org.example.bigevent.pojo.Article">
         select * from article
         <where>
             and JSON_CONTAINS(tags, CONCAT('"', #{tag}, '"'))
+            and state='已发布' and workflow_status='PUBLISHED'
         </where>
     </select>
 </mapper>
-
-
