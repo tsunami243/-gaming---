@@ -16,9 +16,9 @@ org.example.bigevent
 ├── mapper/                     MyBatis Mapper 接口（全部 @Mapper 注解，勿依赖 @MapperScan）
 ├── pojo/                       实体与枚举（Article / Game / WorkflowStatus / PushTask …）
 │   └── dto/                    DTO：*Response / *Row / *Request / 事件与凭据 record
-├── security/                   Spring Security 组件（JWT 过滤器、UserDetailsService）
+├── security/                   Spring Security 组件（仅 JWT 认证过滤器）
 ├── service/                    Service 接口（**只放接口**）
-│   └── impl/                   Service 实现（@Service 类）
+│   └── impl/                   Service 实现（@Service 类，含 UserDetailsServiceImpl）
 ├── task/                       定时任务（@Component + @Scheduled）
 ├── utils/                      工具类（含 JsonTags、TokenBucketRateLimiter、MockWechatPushClient）
 └── validation/                 校验器实现

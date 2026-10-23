@@ -1,4 +1,4 @@
-package org.example.bigevent.security;
+package org.example.bigevent.service.impl;
 
 import org.example.bigevent.mapper.UserMapper;
 import org.example.bigevent.pojo.User;
