@@ -46,6 +46,14 @@ public interface UserService {
     void updatePwd(String newPwd);
 
     /**
+     * 退出登录：立即作废当前登录用户已签发的令牌。
+     *
+     * <p>与 {@link #updatePwd(String)} 使用同一套失效机制——删除 Redis 中的
+     * {@code token{userId}}，使该令牌在下次请求时因双验证失败而不再通过认证。</p>
+     */
+    void logout();
+
+    /**
      * 查询用户列表（需超级管理员权限）。
      *
      * @return 用户列表

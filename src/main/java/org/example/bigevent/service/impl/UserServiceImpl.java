@@ -108,6 +108,27 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 退出登录：删除当前用户的 Redis 会话，使已签发的 JWT 立即失效。
+     *
+     * <p>删除的 key 取自 {@link ThreadLocalUtil} 中的 {@code userId}，而该 claims 只可能由
+     * {@code JwtAuthenticationFilter} 在令牌<b>已通过</b>「签名 + Redis 比对」双验证后写入，
+     * 因此本方法只会作废调用者自己的会话，不存在删除他人令牌的路径。</p>
+     *
+     * <p>与 {@link #updatePwd(String)} 同源：改密码与主动退出都靠删同一个 key 生效，
+     * 所以任何携带旧令牌的请求都会在过滤器处落到「未认证」，由授权规则返回 401。</p>
+     *
+     * @throws ResponseStatusException 登录态缺失（未认证即调用）时 401
+     */
+    @Override
+    public void logout() {
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        if (claims == null || !(claims.get("userId") instanceof Integer userId) || userId < 1) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "登录状态已失效，请重新登录");
+        }
+        stringRedisTemplate.delete("token" + userId);
+    }
+
+    /**
      * 查询全部用户（仅超级管理员可访问该接口）。
      *
      * @return 用户列表

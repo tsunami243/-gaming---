@@ -55,7 +55,7 @@ const userInfo = computed(() => userStore.userInfo)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const isContentAdmin = computed(() => ['ROLE_CONTENT_ADMIN', 'ROLE_SUPER_ADMIN'].includes(userInfo.value?.role))
 onMounted(() => { if (isLoggedIn.value) userStore.fetchUserInfo() })
-const handleLogout = () => { userStore.logout(); router.push('/login') }
+const handleLogout = async () => { await userStore.logoutAction(); router.push('/login') }
 </script>
 
 <style scoped>

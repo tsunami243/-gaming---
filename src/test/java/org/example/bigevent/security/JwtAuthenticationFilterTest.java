@@ -77,20 +77,25 @@ class JwtAuthenticationFilterTest {
         verifyNoInteractions(redis);
     }
 
-    @Test void revokedOrMismatchedTokenCannotAuthenticate() throws Exception {
-        String token = "revoked-token";
+    @Test void tokenFromAServerSideRevokedSessionCannotAuthenticate() throws Exception {
+        // 退出登录（与改密码同理）删掉 token{userId} 后，签名仍然合法的旧令牌必须立即失效。
+        String token = "logged-out-token";
         when(jwtUtil.parseToken(token)).thenReturn(Map.of("userId", 31, "username", "moderator", "role", "ROLE_CONTENT_ADMIN"));
         when(redis.opsForValue()).thenReturn(mock(org.springframework.data.redis.core.ValueOperations.class));
         @SuppressWarnings("unchecked")
         var values = (org.springframework.data.redis.core.ValueOperations<String, String>) redis.opsForValue();
-        when(values.get("token31")).thenReturn("another-token");
+        when(values.get("token31")).thenReturn(null);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + token);
         AtomicReference<Object> claimsInChain = new AtomicReference<>(new Object());
+        AtomicReference<Object> principalInChain = new AtomicReference<>(new Object());
 
-        filter.doFilter(request, new MockHttpServletResponse(), (req, res) -> claimsInChain.set(ThreadLocalUtil.get()));
+        filter.doFilter(request, new MockHttpServletResponse(), (req, res) -> {
+            claimsInChain.set(ThreadLocalUtil.get());
+            principalInChain.set(SecurityContextHolder.getContext().getAuthentication());
+        });
 
         assertNull(claimsInChain.get());
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        assertNull(principalInChain.get());
     }
 }

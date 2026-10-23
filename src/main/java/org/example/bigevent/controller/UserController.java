@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  *
  * <p>基础路径 {@code /user}；{@code /register}、{@code /login} 公开，其余需登录。
  * 登录成功签发 JWT 并写入 Redis（key = {@code token{userId}}），实现 JWT + Redis 双验证；
+ * 改密码与退出登录都删除同一个键，使已签发的令牌立即失效，无需等它自然过期。
  * {@code /list} 仅 SUPER_ADMIN 可访问（见 SecurityConfig）。</p>
  *
  * <p>安全约定：注册与登录都过令牌桶限流；登录失败一律返回同一句提示，
@@ -320,5 +321,23 @@ public class UserController {
         String RefreshToken = jwtUtil.genToken(userMap, DEFAULT_EXPIRATION);
         stringRedisTemplate.opsForValue().set("token" + userId, RefreshToken, REMEMBER_ME_EXPIRATION / 1000, TimeUnit.SECONDS);
         return Result.success(RefreshToken);
+    }
+
+    /**
+     * 退出登录。
+     *
+     * <p>{@code POST /user/logout}；需登录，未显式放行即落入 {@code anyRequest().authenticated()}。
+     *
+     * <p>仅清本地令牌是不够的：令牌本身在过期前一直可验签通过，所以服务端必须同步作废它。
+     * 本接口沿用改密码时的失效机制——删除 Redis 中的 {@code token{userId}}，
+     * 使该令牌在下一次请求时因双验证失败而被判定为未认证。删除目标由已验证的 claims
+     * 决定，因此只能作废调用者自己的会话。</p>
+     *
+     * @return 空数据；令牌已失效（未认证）时由安全链路返回 401
+     */
+    @PostMapping("/logout")
+    public Result logout() {
+        userService.logout();
+        return Result.success();
     }
 }

@@ -1,9 +1,12 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { useUserStore } from './user'
-import { getUserInfo } from '../api/user'
-vi.mock('../api/user', () => ({ getUserInfo: vi.fn(), login: vi.fn(), register: vi.fn() }))
-beforeEach(() => { localStorage.clear(); setActivePinia(createPinia()); getUserInfo.mockReset() })
+import { getUserInfo, logout as logoutApi } from '../api/user'
+vi.mock('../api/user', () => ({ getUserInfo: vi.fn(), login: vi.fn(), register: vi.fn(), logout: vi.fn() }))
+beforeEach(() => {
+  localStorage.clear(); setActivePinia(createPinia())
+  getUserInfo.mockReset(); logoutApi.mockReset()
+})
 it('loads profile from a persisted session and supports failure retry', async () => {
   localStorage.setItem('token', 'fixture')
   const store = useUserStore()
@@ -36,4 +39,49 @@ it('late old-session failures do not override the new profile', async () => {
   reject(new Error('old failure')); await old
   expect(store.userInfo.username).toBe('new')
   expect(store.profileError).toBe('')
+})
+
+// Regression: signing out used to clear localStorage only, so the token stayed
+// valid on the server and could be replayed until it expired on its own.
+it('revokes the token on the server before clearing the local session', async () => {
+  localStorage.setItem('token', 'old-token')
+  const store = useUserStore(); store.token = 'old-token'; store.userInfo = { username: 'admin' }
+  logoutApi.mockResolvedValue({ code: 0 })
+
+  await store.logoutAction()
+
+  expect(logoutApi).toHaveBeenCalledTimes(1)
+  expect(store.token).toBe('')
+  expect(store.userInfo).toBeNull()
+  expect(localStorage.getItem('token')).toBeNull()
+})
+it('still signs out locally when the server cannot be reached', async () => {
+  localStorage.setItem('token', 'old-token')
+  const store = useUserStore(); store.token = 'old-token'
+  logoutApi.mockRejectedValue(new Error('network'))
+
+  await expect(store.logoutAction()).resolves.toBeUndefined()
+
+  expect(store.token).toBe('')
+  expect(localStorage.getItem('token')).toBeNull()
+})
+it('skips the server call when there is no session to revoke', async () => {
+  const store = useUserStore()
+
+  await store.logoutAction()
+
+  expect(logoutApi).not.toHaveBeenCalled()
+  expect(store.token).toBe('')
+})
+it('does not clear a session that was started while the logout was in flight', async () => {
+  const store = useUserStore(); store.token = 'old-token'
+  logoutApi.mockImplementation(async () => {
+    store.token = 'new-token'; localStorage.setItem('token', 'new-token')
+    return { code: 0 }
+  })
+
+  await store.logoutAction()
+
+  expect(store.token).toBe('new-token')
+  expect(localStorage.getItem('token')).toBe('new-token')
 })
