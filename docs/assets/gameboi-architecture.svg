@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1030" viewBox="0 0 1440 1030" role="img" aria-labelledby="title desc">
+  <title id="title">GameBoi 系统架构图</title>
+  <desc id="desc">读者与管理员通过 Vue 前端访问 Spring Boot 模块化单体，后端连接 MySQL 与 Redis。官方来源经 Python 适配器、规则分类、本地或 AI 清洗、SQLite outbox 和内部采集接口进入待审核流程。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.07"/>
+    </filter>
+    <marker id="arrow-slate" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#64748B"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#DC2626"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0F766E"/>
+    </marker>
+    <style>
+      .title { font: 700 34px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #0F172A; }
+      .subtitle { font: 400 16px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #64748B; }
+      .section { font: 700 19px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #0F172A; }
+      .box-title { font: 700 16px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #0F172A; }
+      .body { font: 400 14px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #475569; }
+      .small { font: 400 12px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #64748B; }
+      .label { font: 600 12px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill: #475569; }
+      .mono { font: 500 12px "Consolas","SFMono-Regular",monospace; fill: #334155; }
+      .white { fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="1030" fill="#F8FAFC"/>
+  <rect x="0" y="0" width="1440" height="7" fill="#DC2626"/>
+  <rect x="52" y="39" width="154" height="27" rx="13.5" fill="#FEF2F2"/>
+  <text x="129" y="57" text-anchor="middle" class="label" fill="#B91C1C">SYSTEM OVERVIEW</text>
+  <text x="52" y="108" class="title">GameBoi 系统架构</text>
+  <text x="52" y="140" class="subtitle">公开阅读与人工审核分离 · HTTP + 持久 outbox + MySQL 幂等事务 · 模块化单体</text>
+
+  <!-- Clients -->
+  <rect x="52" y="180" width="238" height="100" rx="14" fill="#FFFFFF" stroke="#E2E8F0" filter="url(#shadow)"/>
+  <circle cx="84" cy="213" r="12" fill="#EFF6FF"/>
+  <path d="M78 214 a6 6 0 1 1 12 0 M77 224 c2-8 12-8 14 0" fill="none" stroke="#2563EB" stroke-width="2"/>
+  <text x="108" y="216" class="box-title">读者</text>
+  <text x="74" y="251" class="body">资讯列表 · 筛选 · 站内全文</text>
+  <text x="74" y="271" class="small">点赞 / 收藏 / 只读评论</text>
+
+  <rect x="322" y="180" width="238" height="100" rx="14" fill="#FFFFFF" stroke="#E2E8F0" filter="url(#shadow)"/>
+  <circle cx="354" cy="213" r="12" fill="#FEF2F2"/>
+  <path d="M348 213 l4 4 8-9" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="378" y="216" class="box-title">内容管理员</text>
+  <text x="344" y="251" class="body">待审列表 · 通过 / 拒绝 / 下架</text>
+  <text x="344" y="271" class="small">来源暂停与审核历史</text>
+
+  <!-- Frontend -->
+  <rect x="630" y="180" width="758" height="100" rx="14" fill="#FFFFFF" stroke="#CBD5E1" filter="url(#shadow)"/>
+  <rect x="630" y="180" width="7" height="100" rx="3.5" fill="#DC2626"/>
+  <text x="660" y="213" class="section">Vue 3 单页应用</text>
+  <text x="660" y="244" class="body">Vite · Pinia · Vue Router · Naive UI</text>
+  <text x="660" y="266" class="small">开发环境：Vite proxy　｜　部署准备：Nginx 静态托管与反向代理</text>
+  <rect x="1190" y="199" width="166" height="29" rx="14.5" fill="#F1F5F9"/>
+  <text x="1273" y="218" text-anchor="middle" class="mono">gaming-news/</text>
+
+  <path d="M290 230 H630" fill="none" stroke="#64748B" stroke-width="2" marker-end="url(#arrow-slate)"/>
+  <path d="M560 230 H630" fill="none" stroke="#64748B" stroke-width="2" marker-end="url(#arrow-slate)"/>
+  <text x="586" y="215" text-anchor="middle" class="small">HTTPS / HTTP</text>
+
+  <!-- Backend -->
+  <rect x="52" y="340" width="910" height="330" rx="16" fill="#FFFFFF" stroke="#CBD5E1" filter="url(#shadow)"/>
+  <rect x="52" y="340" width="910" height="53" rx="16" fill="#0F172A"/>
+  <rect x="52" y="376" width="910" height="17" fill="#0F172A"/>
+  <text x="80" y="374" class="section white">Spring Boot 模块化单体</text>
+  <text x="934" y="373" text-anchor="end" class="mono" fill="#CBD5E1">Java 17 · Spring Security · MyBatis</text>
+
+  <rect x="80" y="420" width="252" height="143" rx="11" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="101" y="450" class="box-title">Controller / Boundary</text>
+  <text x="101" y="480" class="mono">/api/v1/**</text>
+  <text x="101" y="502" class="body">公开读取 · 管理审核</text>
+  <text x="101" y="530" class="mono">/internal/v1/ingest/**</text>
+  <text x="101" y="551" class="small">统一响应封套 + traceId</text>
+
+  <rect x="358" y="420" width="270" height="143" rx="11" fill="#FFF7F7" stroke="#FECACA"/>
+  <text x="379" y="450" class="box-title">Service / Business</text>
+  <text x="379" y="480" class="body">文章 · 游戏 · 审核 · 互动</text>
+  <text x="379" y="503" class="body">来源策略 · 幂等接收</text>
+  <rect x="379" y="521" width="224" height="26" rx="6" fill="#FEF2F2"/>
+  <text x="491" y="539" text-anchor="middle" class="small" fill="#B91C1C">采集稿件默认 PENDING_REVIEW</text>
+
+  <rect x="654" y="420" width="280" height="143" rx="11" fill="#F0FDFA" stroke="#CCFBF1"/>
+  <text x="675" y="450" class="box-title">Security / Validation</text>
+  <text x="675" y="480" class="body">JWT + Redis 会话校验</text>
+  <text x="675" y="503" class="body">角色授权 · 限流 · 参数校验</text>
+  <text x="675" y="530" class="body">独立采集服务令牌</text>
+  <text x="675" y="551" class="small">fail-closed · 常量时间比较</text>
+
+  <rect x="80" y="590" width="854" height="52" rx="10" fill="#F1F5F9"/>
+  <text x="101" y="613" class="label">审核状态机</text>
+  <text x="204" y="613" class="mono">PENDING_REVIEW → PUBLISHED / REJECTED / UNPUBLISHED</text>
+  <text x="101" y="633" class="small">revision 乐观锁 · moderation_audit 操作审计 · 公开接口只返回 PUBLISHED</text>
+
+  <!-- Data stores -->
+  <rect x="1010" y="340" width="378" height="330" rx="16" fill="#FFFFFF" stroke="#CBD5E1" filter="url(#shadow)"/>
+  <text x="1038" y="378" class="section">数据与运行状态</text>
+  <rect x="1038" y="410" width="322" height="103" rx="11" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <ellipse cx="1070" cy="438" rx="14" ry="7" fill="none" stroke="#2563EB" stroke-width="2"/>
+  <path d="M1056 438 v19 c0 9 28 9 28 0 v-19 M1056 448 c0 9 28 9 28 0" fill="none" stroke="#2563EB" stroke-width="2"/>
+  <text x="1100" y="441" class="box-title">MySQL 8 · 业务事实</text>
+  <text x="1060" y="479" class="body">文章 / 关联 / 审核 / receipt</text>
+  <text x="1060" y="500" class="small">Flyway V1–V13 · 唯一键 + 事务</text>
+
+  <rect x="1038" y="539" width="322" height="103" rx="11" fill="#FFF7ED" stroke="#FED7AA"/>
+  <path d="M1057 568 h27 M1057 579 h27 M1057 590 h27" stroke="#EA580C" stroke-width="3" stroke-linecap="round"/>
+  <text x="1100" y="568" class="box-title">Redis · 易失状态</text>
+  <text x="1060" y="607" class="body">JWT 校验 · 限流 · 热度 / 去重</text>
+  <text x="1060" y="628" class="small">不是采集结果的唯一持久存储</text>
+
+  <path d="M962 461 H1010" fill="none" stroke="#2563EB" stroke-width="2.2" marker-end="url(#arrow-slate)"/>
+  <path d="M962 590 H1010" fill="none" stroke="#EA580C" stroke-width="2.2" marker-end="url(#arrow-slate)"/>
+
+  <!-- Frontend to backend -->
+  <path d="M1008 280 V312 H510 V340" fill="none" stroke="#64748B" stroke-width="2.2" marker-end="url(#arrow-slate)"/>
+  <rect x="628" y="294" width="250" height="25" rx="12.5" fill="#F8FAFC"/>
+  <text x="753" y="311" text-anchor="middle" class="mono">JSON API · DTO · ApiResponse</text>
+
+  <!-- External sources -->
+  <rect x="52" y="770" width="260" height="174" rx="14" fill="#FFFFFF" stroke="#CBD5E1" filter="url(#shadow)"/>
+  <text x="78" y="806" class="section">官方内容来源</text>
+  <text x="78" y="839" class="body">Apex / ALGS · VALORANT</text>
+  <text x="78" y="863" class="body">CS2 · 三角洲行动</text>
+  <text x="78" y="894" class="small">官网页面 / 官方 JSON / Steam API</text>
+  <text x="78" y="923" class="label" fill="#B91C1C">低频 · 串行 · 域名白名单</text>
+
+  <!-- Python pipeline -->
+  <rect x="364" y="770" width="1024" height="174" rx="14" fill="#FFFFFF" stroke="#CBD5E1" filter="url(#shadow)"/>
+  <text x="392" y="806" class="section">Python 采集与可靠交付</text>
+  <text x="1360" y="804" text-anchor="end" class="mono">ingest/</text>
+
+  <rect x="392" y="831" width="161" height="78" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="472" y="859" text-anchor="middle" class="box-title">来源适配器</text>
+  <text x="472" y="884" text-anchor="middle" class="small">发现 · 抽取 · 限速</text>
+
+  <rect x="581" y="831" width="161" height="78" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="661" y="859" text-anchor="middle" class="box-title">规则与清洗</text>
+  <text x="661" y="884" text-anchor="middle" class="small">四游戏 / 六类型</text>
+
+  <rect x="770" y="831" width="161" height="78" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="850" y="859" text-anchor="middle" class="box-title">内容处理</text>
+  <text x="850" y="884" text-anchor="middle" class="small">本地确定性 / 可选 AI</text>
+
+  <rect x="959" y="831" width="161" height="78" rx="10" fill="#F0FDFA" stroke="#99F6E4"/>
+  <text x="1039" y="859" text-anchor="middle" class="box-title">SQLite outbox</text>
+  <text x="1039" y="884" text-anchor="middle" class="small">持久事件 · 重试 · 隔离</text>
+
+  <rect x="1148" y="831" width="212" height="78" rx="10" fill="#FFF7F7" stroke="#FECACA"/>
+  <text x="1254" y="859" text-anchor="middle" class="box-title">HTTP 投递与 ACK</text>
+  <text x="1254" y="884" text-anchor="middle" class="small">eventId 不变 · receipt 后确认</text>
+
+  <path d="M312 857 H364" fill="none" stroke="#DC2626" stroke-width="2.4" marker-end="url(#arrow-red)"/>
+  <path d="M553 870 H581 M742 870 H770 M931 870 H959 M1120 870 H1148" fill="none" stroke="#DC2626" stroke-width="2.2" marker-end="url(#arrow-red)"/>
+
+  <!-- Ingest delivery and receipt -->
+  <path d="M1254 770 V714 H872 V670" fill="none" stroke="#DC2626" stroke-width="2.4" marker-end="url(#arrow-red)"/>
+  <rect x="928" y="691" width="283" height="24" rx="12" fill="#F8FAFC"/>
+  <text x="1069" y="708" text-anchor="middle" class="mono">POST /internal/v1/ingest/events</text>
+
+  <path d="M760 670 V742 H1148 V770" fill="none" stroke="#0F766E" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow-teal)"/>
+  <rect x="818" y="726" width="278" height="24" rx="12" fill="#F8FAFC"/>
+  <text x="957" y="743" text-anchor="middle" class="small" fill="#0F766E">事务提交 receipt → 本地 ACK；同事件重放不重复写入</text>
+
+  <!-- Footer -->
+  <line x1="52" y1="981" x2="1388" y2="981" stroke="#E2E8F0"/>
+  <path d="M58 1005 H96" stroke="#DC2626" stroke-width="2.4" marker-end="url(#arrow-red)"/>
+  <text x="110" y="1010" class="small">采集投递</text>
+  <path d="M220 1005 H258" stroke="#0F766E" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow-teal)"/>
+  <text x="272" y="1010" class="small">提交回执</text>
+  <text x="1388" y="1010" text-anchor="end" class="small">交付语义：at-least-once + 服务端幂等，不宣称端到端 exactly-once</text>
+</svg>
